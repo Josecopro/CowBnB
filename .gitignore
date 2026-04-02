@@ -1,0 +1,13 @@
+/linux
+/.dart*
+/FLUTTER*
+/MIGRATION*
+.m*
+/.idea
+/android
+/build
+/ios
+/macos
+/test
+/web
+/windows
