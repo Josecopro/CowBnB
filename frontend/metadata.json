@@ -1,0 +1,5 @@
+{
+  "name": "CowBnB",
+  "description": "A platform for reserving, managing, and scaling agricultural land leases.",
+  "requestFramePermissions": []
+}
