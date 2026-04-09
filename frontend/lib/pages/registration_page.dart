@@ -12,8 +12,8 @@ class RegistrationPage extends StatefulWidget {
 
 class _RegistrationPageState extends State<RegistrationPage> {
   String selectedRole = 'owner';
-  String selectedPhonePrefix = '+56';
-  final List<String> phonePrefixes = ['+56', '+54', '+57', '+52', '+34'];
+  String selectedPhonePrefix = '+57';
+  final List<String> phonePrefixes = ['+56', '+54', '+57', '+52', '+34', '+1', '+44'];
 
   @override
   Widget build(BuildContext context) {

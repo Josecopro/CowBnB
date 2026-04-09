@@ -16,6 +16,30 @@ class _CreateListingPageState extends State<CreateListingPage> {
   late TextEditingController descriptionController;
   late TextEditingController priceController;
   late TextEditingController sizeController;
+  final Set<String> selectedFeatures = <String>{};
+
+  static const List<_FeatureOption> _featureOptions = [
+    _FeatureOption(
+      label: 'Riego automático',
+      category: 'Agua',
+      icon: Icons.water_drop,
+    ),
+    _FeatureOption(
+      label: 'Energía eléctrica',
+      category: 'Energía',
+      icon: Icons.bolt,
+    ),
+    _FeatureOption(
+      label: 'Caminos pavimentados',
+      category: 'Acceso',
+      icon: Icons.alt_route,
+    ),
+    _FeatureOption(
+      label: 'Certificación orgánica',
+      category: 'Certificación',
+      icon: Icons.verified,
+    ),
+  ];
 
   @override
   void initState() {
@@ -155,7 +179,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
         const SizedBox(height: AppSpacing.md),
         AppInput(
           label: 'Descripción',
-          hint: 'Describe tu terreno...',
+          hint: 'Describe tu terreno para que las demas personas sepan lo maravilloso que es',
           controller: descriptionController,
         ),
         const SizedBox(height: AppSpacing.md),
@@ -172,8 +196,8 @@ class _CreateListingPageState extends State<CreateListingPage> {
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: AppInput(
-                label: 'Precio/Mes',
-                hint: '\$1,200',
+                label: 'Precio por Día',
+                hint: '\$2,500,000',
                 controller: priceController,
                 keyboardType: TextInputType.number,
               ),
@@ -193,10 +217,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
           style: AppTextStyles.headlineSmall,
         ),
         const SizedBox(height: AppSpacing.lg),
-        _buildCheckboxItem('Riego automático'),
-        _buildCheckboxItem('Energía eléctrica'),
-        _buildCheckboxItem('Caminos pavimentados'),
-        _buildCheckboxItem('Certificación orgánica'),
+        ..._featureOptions.map(_buildCheckboxItem),
       ],
     );
   }
@@ -244,22 +265,85 @@ class _CreateListingPageState extends State<CreateListingPage> {
     );
   }
 
-  Widget _buildCheckboxItem(String label) {
+  Widget _buildCheckboxItem(_FeatureOption option) {
+    final bool isSelected = selectedFeatures.contains(option.label);
+
+    void toggleSelection() {
+      setState(() {
+        if (isSelected) {
+          selectedFeatures.remove(option.label);
+        } else {
+          selectedFeatures.add(option.label);
+        }
+      });
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      child: Row(
-        children: [
-          Checkbox(
-            value: true,
-            onChanged: (_) {},
-            activeColor: AppColors.primary,
+      child: InkWell(
+        onTap: toggleSelection,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
           ),
-          Text(
-            label,
-            style: AppTextStyles.body,
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primary.withValues(alpha: 0.08)
+                : AppColors.surface,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            border: Border.all(
+              color: isSelected ? AppColors.primary : AppColors.border,
+            ),
           ),
-        ],
+          child: Row(
+            children: [
+              Icon(
+                option.icon,
+                color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                size: 22,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      option.label,
+                      style: AppTextStyles.body,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      option.category,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Checkbox(
+                value: isSelected,
+                onChanged: (_) => toggleSelection(),
+                activeColor: AppColors.primary,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
+}
+
+class _FeatureOption {
+  const _FeatureOption({
+    required this.label,
+    required this.category,
+    required this.icon,
+  });
+
+  final String label;
+  final String category;
+  final IconData icon;
 }
