@@ -15,7 +15,6 @@ frontend/test
 frontend/web
 frontend/windows
 frontend/linux
-frontend/*.yaml
 frontend/.dart*
 frontend/.*
 
