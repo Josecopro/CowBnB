@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
+import '../components/optimized_network_image.dart';
 
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({Key? key}) : super(key: key);
@@ -22,9 +23,11 @@ class OnboardingPage extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   // Hero Image
-                  Image.network(
-                    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop',
+                  AppNetworkImage(
+                    imageUrl:
+                        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop',
                     fit: BoxFit.cover,
+                    memCacheWidth: 1280,
                   ),
                   // Gradient Overlay
                   Container(

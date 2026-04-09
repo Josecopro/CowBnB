@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
 import '../components/app_components.dart';
+import '../components/notifications_modal.dart';
+import '../components/optimized_network_image.dart';
 
 class DashboardOwnerPage extends StatefulWidget {
   const DashboardOwnerPage({Key? key}) : super(key: key);
@@ -11,6 +13,22 @@ class DashboardOwnerPage extends StatefulWidget {
 }
 
 class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
+  final List<AppNotification> notifications = const [
+    AppNotification(
+      title: 'Nueva consulta de arrendatario',
+      description: 'Camila pregunto por disponibilidad en Tierra Verde.',
+      time: 'Hace 5 min',
+      icon: Icons.chat_bubble,
+    ),
+    AppNotification(
+      title: 'Pago recibido',
+      description: 'Se recibio el pago mensual de Rancho del Sur.',
+      time: 'Hace 2 h',
+      icon: Icons.payments,
+      isRead: true,
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -232,17 +250,19 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
         ],
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications, color: AppColors.primary),
-          onPressed: () {},
+        NotificationBellButton(
+          notifications: notifications,
+          onPressed: () => showNotificationsModal(
+            context,
+            notifications: notifications,
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: CircleAvatar(
+          child: const AppAvatar(
             radius: 16,
-            backgroundImage: NetworkImage(
-              'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
-            ),
+            imageUrl:
+                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
           ),
         ),
       ],
@@ -305,11 +325,12 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                   topLeft: Radius.circular(AppRadius.lg),
                   topRight: Radius.circular(AppRadius.lg),
                 ),
-                child: Image.network(
-                  image,
+                child: AppNetworkImage(
+                  imageUrl: image,
                   height: 150,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  memCacheWidth: 800,
                 ),
               ),
               Positioned(

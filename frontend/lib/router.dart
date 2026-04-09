@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'pages/onboarding_page.dart';
 import 'pages/registration_page.dart';
@@ -8,6 +7,9 @@ import 'pages/map_discovery_page.dart';
 import 'pages/listing_details_page.dart';
 import 'pages/checkout_page.dart';
 import 'pages/create_listing_page.dart';
+import 'pages/explore_page.dart';
+import 'pages/favorites_page.dart';
+import 'pages/messages_page.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -43,6 +45,18 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/create-listing',
       builder: (context, state) => const CreateListingPage(),
+    ),
+    GoRoute(
+      path: '/explore',
+      builder: (context, state) => const ExplorePage(),
+    ),
+    GoRoute(
+      path: '/favorites',
+      builder: (context, state) => const FavoritesPage(),
+    ),
+    GoRoute(
+      path: '/messages',
+      builder: (context, state) => const MessagesPage(),
     ),
   ],
 );

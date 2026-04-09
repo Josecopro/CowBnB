@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
 import '../components/app_components.dart';
+import '../components/notifications_modal.dart';
+import '../components/app_bottom_nav.dart';
+import '../components/optimized_network_image.dart';
 
 class DashboardRenterPage extends StatefulWidget {
   const DashboardRenterPage({Key? key}) : super(key: key);
@@ -11,7 +14,21 @@ class DashboardRenterPage extends StatefulWidget {
 }
 
 class _DashboardRenterPageState extends State<DashboardRenterPage> {
-  int selectedNavIndex = 3;
+  final List<AppNotification> notifications = const [
+    AppNotification(
+      title: 'Nuevo mensaje del propietario',
+      description: 'Tienes una actualizacion en Rancho del Sur.',
+      time: 'Hace 8 min',
+      icon: Icons.message,
+    ),
+    AppNotification(
+      title: 'Reserva confirmada',
+      description: 'Tu reserva para Valle de los Girasoles fue confirmada.',
+      time: 'Hace 1 h',
+      icon: Icons.check_circle,
+      isRead: true,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +116,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
+      bottomNavigationBar: const AppBottomNav(activeItem: AppNavItem.profile),
     );
   }
 
@@ -121,17 +138,19 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
         ],
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications, color: AppColors.primary),
-          onPressed: () {},
+        NotificationBellButton(
+          notifications: notifications,
+          onPressed: () => showNotificationsModal(
+            context,
+            notifications: notifications,
+          ),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: CircleAvatar(
+          child: const AppAvatar(
             radius: 16,
-            backgroundImage: NetworkImage(
-              'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
-            ),
+            imageUrl:
+                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
           ),
         ),
       ],
@@ -274,11 +293,12 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                 topLeft: Radius.circular(AppRadius.lg),
                 topRight: Radius.circular(AppRadius.lg),
               ),
-              child: Image.network(
-                image,
+              child: AppNetworkImage(
+                imageUrl: image,
                 height: 150,
                 width: double.infinity,
                 fit: BoxFit.cover,
+                memCacheWidth: 800,
               ),
             ),
             Padding(
@@ -418,73 +438,4 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
     );
   }
 
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.darkBg,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xl),
-        ),
-        border: Border(
-          top: BorderSide(
-            color: Colors.white.withOpacity(0.1),
-          ),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(0, Icons.search, 'Explorar', () => context.go('/map')),
-            _buildNavItem(1, Icons.favorite, 'Favoritos', () {}),
-            _buildNavItem(2, Icons.message, 'Mensajes', () {}),
-            _buildNavItem(3, Icons.person, 'Perfil', () {}, isActive: true),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(
-    int index,
-    IconData icon,
-    String label,
-    VoidCallback onTap, {
-    bool isActive = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.xs,
-        ),
-        decoration: isActive
-            ? BoxDecoration(
-                color: AppColors.primary.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-              )
-            : null,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isActive ? AppColors.success : Colors.white70,
-              size: 24,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: isActive ? AppColors.success : Colors.white70,
-                fontSize: 11,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

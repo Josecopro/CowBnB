@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
 import '../components/app_components.dart';
+import '../components/optimized_network_image.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({Key? key}) : super(key: key);
@@ -35,11 +36,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   // Image Section
                   ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadius.xl),
-                    child: Image.network(
-                      'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop',
+                      child: AppNetworkImage(
+                        imageUrl:
+                            'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop',
                       height: 300,
                       width: double.infinity,
                       fit: BoxFit.cover,
+                        memCacheWidth: 1200,
                     ),
                   ),
 
@@ -479,7 +482,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             Expanded(
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: '9 1234 5678',
+                  hintText: '300 000 0000',
                   hintStyle: AppTextStyles.bodySmall.copyWith(
                     color: AppColors.textSecondary,
                   ),

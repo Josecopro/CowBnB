@@ -75,7 +75,13 @@ class _CreateListingPageState extends State<CreateListingPage> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              context.go('/owner');
+            }
+          },
         ),
       ),
       body: SingleChildScrollView(

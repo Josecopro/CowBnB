@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
+import '../components/notifications_modal.dart';
+import '../components/app_bottom_nav.dart';
+import '../components/optimized_network_image.dart';
 
 class MapDiscoveryPage extends StatefulWidget {
   const MapDiscoveryPage({Key? key}) : super(key: key);
@@ -10,7 +13,14 @@ class MapDiscoveryPage extends StatefulWidget {
 }
 
 class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
-  int selectedNavIndex = 0;
+  final List<AppNotification> notifications = const [
+    AppNotification(
+      title: 'Nuevos terrenos en tu zona',
+      description: 'Aparecieron 2 opciones con disponibilidad inmediata.',
+      time: 'Hace 20 min',
+      icon: Icons.travel_explore,
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -57,11 +67,13 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                   // Map Image
                   ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadius.xl),
-                    child: Image.network(
-                      'https://images.unsplash.com/photo-1586771107445-d3af255c2690?q=80&w=2832&auto=format&fit=crop',
+                    child: AppNetworkImage(
+                      imageUrl:
+                          'https://images.unsplash.com/photo-1586771107445-d3af255c2690?q=80&w=2832&auto=format&fit=crop',
                       height: 400,
                       width: double.infinity,
                       fit: BoxFit.cover,
+                      memCacheWidth: 1280,
                     ),
                   ),
 
@@ -242,7 +254,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
+      bottomNavigationBar: const AppBottomNav(activeItem: AppNavItem.explore),
     );
   }
 
@@ -252,11 +264,10 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
       elevation: 0,
       title: Row(
         children: [
-          CircleAvatar(
+          const AppAvatar(
             radius: 16,
-            backgroundImage: NetworkImage(
-              'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
-            ),
+            imageUrl:
+                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
           ),
           const SizedBox(width: AppSpacing.md),
           Text(
@@ -269,9 +280,12 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
         ],
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.notifications, color: AppColors.primary),
-          onPressed: () {},
+        NotificationBellButton(
+          notifications: notifications,
+          onPressed: () => showNotificationsModal(
+            context,
+            notifications: notifications,
+          ),
         ),
       ],
     );
@@ -352,11 +366,12 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                     topLeft: Radius.circular(AppRadius.xl),
                     topRight: Radius.circular(AppRadius.xl),
                   ),
-                  child: Image.network(
-                    image,
-                    height: 150,
+                  child: AppNetworkImage(
+                    imageUrl: image,
+                    height: 180,
                     width: double.infinity,
                     fit: BoxFit.cover,
+                    memCacheWidth: 860,
                   ),
                 ),
                 Positioned(
@@ -537,73 +552,4 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
     );
   }
 
-  Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.darkBg,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xl),
-        ),
-        border: Border(
-          top: BorderSide(
-            color: Colors.white.withOpacity(0.1),
-          ),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(0, Icons.search, 'Explorar', () {}, isActive: true),
-            _buildNavItem(1, Icons.favorite, 'Guardados', () {}),
-            _buildNavItem(2, Icons.agriculture, 'Arriendos', () {}),
-            _buildNavItem(3, Icons.message, 'Bandeja', () {}),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(
-    int index,
-    IconData icon,
-    String label,
-    VoidCallback onTap, {
-    bool isActive = false,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.xs,
-        ),
-        decoration: isActive
-            ? BoxDecoration(
-                color: AppColors.primary.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-              )
-            : null,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isActive ? AppColors.success : Colors.white70,
-              size: 24,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: isActive ? AppColors.success : Colors.white70,
-                fontSize: 11,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

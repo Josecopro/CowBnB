@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
 import '../components/app_components.dart';
+import '../components/app_bottom_nav.dart';
+import '../components/optimized_network_image.dart';
 
 class CheckoutPage extends StatefulWidget {
   const CheckoutPage({Key? key}) : super(key: key);
@@ -30,7 +32,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              context.go('/listing');
+            }
+          },
         ),
       ),
       body: SingleChildScrollView(
@@ -46,11 +54,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(AppRadius.lg),
-                      child: Image.network(
-                        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop',
+                      child: AppNetworkImage(
+                        imageUrl:
+                            'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop',
                         height: 150,
                         width: double.infinity,
                         fit: BoxFit.cover,
+                        memCacheWidth: 800,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -284,6 +294,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           ),
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(activeItem: AppNavItem.profile),
     );
   }
 
