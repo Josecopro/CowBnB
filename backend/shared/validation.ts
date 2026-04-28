@@ -1,119 +1,149 @@
-import { z } from 'zod';
+export function validatePaymentEvent(data: any): ValidationResult {
+  return validateData(PAYMENT_EVENT_VALIDATION_RULES, data);
+}
 
-// ============================================================================
-// ZOD SCHEMAS FOR VALIDATION
-// Based on validation-rules.ts
-// ============================================================================
+/**
+ * Centralized Data Validation Module
+ * Implements a generic validator and per-model wrappers.
+ * All errors are structured as { field, code, message }.
+ */
 
-// User Schema
-export const UserSchema = z.object({
-  uid: z.string().regex(/^[a-zA-Z0-9]{20,}$/, 'Invalid Firebase UID format'),
-  email: z.string().email().min(5).max(254),
-  fullName: z.string().min(2).max(100).regex(/^[a-zA-Z\s\-áéíóúñÁÉÍÓÚÑ]+$/, 'Only letters, spaces, hyphens allowed'),
-  phone: z.string().regex(/^[0-9]{7,15}$/, 'Phone must be 7-15 digits only'),
-  phonePrefix: z.string().regex(/^\+[0-9]{1,3}$/, 'Invalid phone prefix format'),
-  role: z.enum(['owner', 'renter']),
-  status: z.enum(['active', 'suspended', 'deleted']).default('active'),
-  createdAt: z.number().int().positive(),
-  updatedAt: z.number().int().positive(),
-  profileImageUrl: z.string().url().regex(/^https:\/\/.*\.(jpeg|jpg|png|webp)$/).optional(),
-  bio: z.string().max(500).optional(),
-});
+import {
+  USER_VALIDATION_RULES,
+  TERRENO_VALIDATION_RULES,
+  RESERVA_VALIDATION_RULES,
+  PAYMENT_EVENT_VALIDATION_RULES,
+  CONVERSACION_VALIDATION_RULES,
+  MENSAJE_VALIDATION_RULES,
+  REVIEW_VALIDATION_RULES,
+} from '../models/validation-rules';
 
-// Terreno Schema
-export const TerrenoSchema = z.object({
-  id: z.string(),
-  ownerId: z.string(),
-  title: z.string().min(5).max(100),
-  description: z.string().min(20).max(2000),
-  sizeHectares: z.number().positive().max(100000),
-  location: z.object({
-    latitude: z.number().min(-90).max(90),
-    longitude: z.number().min(-180).max(180),
-    geohash: z.string().min(6).max(8),
-  }),
-  priceMonthly: z.number().int().positive().max(10000000),
-  features: z.array(z.enum(['irrigation', 'power', 'roads', 'certification'])).max(10),
-  images: z.array(z.object({
-    url: z.string().url(),
-    alt: z.string().optional(),
-  })).max(10),
-  status: z.enum(['disponible', 'reservado', 'en_espera', 'inactivo']).default('disponible'),
-  createdAt: z.number().int().positive(),
-  updatedAt: z.number().int().positive(),
-  ratingAvg: z.number().min(0).max(5).optional(),
-  ratingCount: z.number().int().min(0).optional(),
-  lastNdviCheck: z.number().int().positive().optional(),
-  ndviStatus: z.enum(['green', 'yellow', 'red']).optional(),
-});
+export interface ValidationError {
+  field: string;
+  code: string;
+  message: string;
+}
 
-// Reserva Schema (stub for Etapa A)
-export const ReservaSchema = z.object({
-  id: z.string(),
-  terrenoId: z.string(),
-  renterId: z.string(),
-  ownerId: z.string(),
-  startDate: z.number().int().positive(),
-  endDate: z.number().int().positive(),
-  durationDays: z.number().int().positive().max(9999),
-  pricePerMonth: z.number().int().positive(),
-  estimatedTotal: z.number().positive(),
-  status: z.enum(['en_espera', 'reservado', 'activa', 'finalizada', 'cancelada']).default('en_espera'),
-  createdAt: z.number().int().positive(),
-  updatedAt: z.number().int().positive(),
-});
-
-// PaymentEvent Schema (stub)
-export const PaymentEventSchema = z.object({
-  id: z.string(),
-  reservaId: z.string(),
-  terrenoId: z.string(),
-  amount: z.number().positive(),
-  currency: z.string().default('CLP'),
-  boldReference: z.string(),
-  status: z.enum(['pending', 'approved', 'rejected', 'cancelled']),
-  createdAt: z.number().int().positive(),
-  updatedAt: z.number().int().positive(),
-});
-
-// Validation Result Type
 export interface ValidationResult {
   valid: boolean;
-  errors: Array<{
-    field: string;
-    code: string;
-    message: string;
-  }>;
+  errors: ValidationError[];
 }
 
-// Generic Validation Function
-export function validateSchema<T>(schema: z.ZodSchema<T>, data: unknown): ValidationResult {
-  const result = schema.safeParse(data);
-  if (result.success) {
-    return { valid: true, errors: [] };
-  } else {
-    const errors = result.error.errors.map(err => ({
-      field: err.path.join('.'),
-      code: err.code.toUpperCase(),
-      message: err.message,
-    }));
-    return { valid: false, errors };
+// Generic validator
+export function validateData(rules: any, data: any): ValidationResult {
+  const errors: ValidationError[] = [];
+  for (const field in rules) {
+    const rule = rules[field];
+    const value = data[field];
+
+    // Required
+    if (rule.required && (value === undefined || value === null || value === '')) {
+      errors.push({ field, code: 'REQUIRED', message: `${field} is required` });
+      continue;
+    }
+    if (value === undefined || value === null) continue;
+
+    // Type
+    if (rule.type && typeof value !== rule.type && rule.type !== 'enum' && rule.type !== 'array<string>' && rule.type !== 'object') {
+      errors.push({ field, code: 'TYPE', message: `${field} must be of type ${rule.type}` });
+      continue;
+    }
+
+    // Enum
+    if (rule.type === 'enum' && rule.enum && !rule.enum.includes(value)) {
+      errors.push({ field, code: 'ENUM', message: `${field} must be one of: ${rule.enum.join(', ')}` });
+      continue;
+    }
+
+    // Pattern
+    if (rule.pattern && typeof value === 'string' && !rule.pattern.test(value)) {
+      errors.push({ field, code: 'PATTERN', message: `${field} does not match required pattern` });
+      continue;
+    }
+
+    // Min/Max Length
+    if (rule.minLength && value.length < rule.minLength) {
+      errors.push({ field, code: 'MIN_LENGTH', message: `${field} must be at least ${rule.minLength} chars` });
+    }
+    if (rule.maxLength && value.length > rule.maxLength) {
+      errors.push({ field, code: 'MAX_LENGTH', message: `${field} must be at most ${rule.maxLength} chars` });
+    }
+
+    // Min/Max Value
+    if (rule.minValue && typeof value === 'number' && value <= parseFloat(rule.minValue.replace('> ', ''))) {
+      errors.push({ field, code: 'MIN_VALUE', message: `${field} must be > ${rule.minValue.replace('> ', '')}` });
+    }
+    if (rule.maxValue && typeof value === 'number' && value > parseFloat(rule.maxValue)) {
+      errors.push({ field, code: 'MAX_VALUE', message: `${field} must be <= ${rule.maxValue}` });
+    }
+
+    // Array validation
+    if (rule.type && rule.type.startsWith('array')) {
+      if (!Array.isArray(value)) {
+        errors.push({ field, code: 'TYPE', message: `${field} must be an array` });
+        continue;
+      }
+      if (rule.minItems !== undefined && value.length < rule.minItems) {
+        errors.push({ field, code: 'MIN_ITEMS', message: `${field} must have at least ${rule.minItems} items` });
+      }
+      if (rule.maxItems !== undefined && value.length > rule.maxItems) {
+        errors.push({ field, code: 'MAX_ITEMS', message: `${field} must have at most ${rule.maxItems} items` });
+      }
+      if (rule.validValues) {
+        for (const v of value) {
+          if (!rule.validValues.includes(v)) {
+            errors.push({ field, code: 'INVALID_VALUE', message: `${field} contains invalid value: ${v}` });
+          }
+        }
+      }
+    }
+
+    // Object validation (for subfields)
+    if (rule.type === 'object' && rule.subfields) {
+      for (const sub in rule.subfields) {
+        const subRule = rule.subfields[sub];
+        const subValue = value[sub];
+        if (subRule.required && (subValue === undefined || subValue === null)) {
+          errors.push({ field: `${field}.${sub}`, code: 'REQUIRED', message: `${field}.${sub} is required` });
+        }
+        // Type, range, pattern, etc. for subfields
+        if (subRule.type && typeof subValue !== subRule.type) {
+          errors.push({ field: `${field}.${sub}`, code: 'TYPE', message: `${field}.${sub} must be of type ${subRule.type}` });
+        }
+        if (subRule.pattern && typeof subValue === 'string' && !subRule.pattern.test(subValue)) {
+          errors.push({ field: `${field}.${sub}`, code: 'PATTERN', message: `${field}.${sub} does not match required pattern` });
+        }
+        if (subRule.range) {
+          const [min, max] = subRule.range.replace('[', '').replace(']', '').split(',').map(Number);
+          if (typeof subValue === 'number' && (subValue < min || subValue > max)) {
+            errors.push({ field: `${field}.${sub}`, code: 'RANGE', message: `${field}.${sub} must be in range [${min}, ${max}]` });
+          }
+        }
+      }
+    }
   }
+  return errors.length === 0 ? { valid: true, errors: [] } : { valid: false, errors };
 }
 
-// Specific Validators
-export function validateUser(data: unknown): ValidationResult {
-  return validateSchema(UserSchema, data);
+
+// Per-model wrappers
+export function validateUser(data: any): ValidationResult {
+  return validateData(USER_VALIDATION_RULES, data);
+}
+export function validateTerreno(data: any): ValidationResult {
+  return validateData(TERRENO_VALIDATION_RULES, data);
+}
+export function validateReserva(data: any): ValidationResult {
+  return validateData(RESERVA_VALIDATION_RULES, data);
+}
+export function validateConversacion(data: any): ValidationResult {
+  return validateData(CONVERSACION_VALIDATION_RULES, data);
+}
+export function validateMensaje(data: any): ValidationResult {
+  return validateData(MENSAJE_VALIDATION_RULES, data);
+}
+export function validateReview(data: any): ValidationResult {
+  return validateData(REVIEW_VALIDATION_RULES, data);
 }
 
-export function validateTerreno(data: unknown): ValidationResult {
-  return validateSchema(TerrenoSchema, data);
-}
 
-export function validateReserva(data: unknown): ValidationResult {
-  return validateSchema(ReservaSchema, data);
-}
-
-export function validatePaymentEvent(data: unknown): ValidationResult {
-  return validateSchema(PaymentEventSchema, data);
-}

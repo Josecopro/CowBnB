@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // === USERS ===
+    match /users/{userId} {
+      // Solo el usuario autenticado puede leer/escribir su propio perfil
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // TODO: Agregar reglas para admins/moderadores si aplica
+    }
+
+    // === TERRENOS ===
+    match /terrenos/{terrenoId} {
+      // Solo usuarios autenticados pueden leer
+      allow read: if request.auth != null;
+      // Solo el owner puede escribir
+      allow write: if request.auth != null && request.auth.uid == resource.data.ownerId;
+      // TODO: Agregar reglas para admins/moderadores si aplica
+    }
+
+    // === RESERVAS ===
+    match /reservas/{reservaId} {
+      // Solo usuarios autenticados pueden leer
+      allow read: if request.auth != null;
+      // Solo el owner o el renter pueden escribir
+      allow write: if request.auth != null && (
+        request.auth.uid == resource.data.ownerId || request.auth.uid == resource.data.renterId
+      );
+      // TODO: Agregar reglas para admins/moderadores si aplica
+    }
+
+    // === MENSAJES ===
+    match /mensajes/{mensajeId} {
+      allow read, write: if request.auth != null;
+      // TODO: Limitar por participantes de la conversación
+    }
+
+    // === REVIEWS ===
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+      // TODO: Validar que solo usuarios que hayan reservado puedan escribir
+    }
+
+    // === ADMIN/Soporte (ejemplo) ===
+    // match /admin/{docId} {
+    //   allow read, write: if request.auth != null && request.auth.token.admin == true;
+    // }
+
+    // Bloqueo por defecto para cualquier otra colección
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

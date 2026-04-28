@@ -18,3 +18,4 @@ frontend/linux
 frontend/.dart*
 frontend/.*
 
+backend/.env
