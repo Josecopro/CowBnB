@@ -35,12 +35,16 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const MapDiscoveryPage(),
     ),
     GoRoute(
-      path: '/listing',
-      builder: (context, state) => const ListingDetailsPage(),
+      path: '/listing/:id',
+      builder: (context, state) => ListingDetailsPage(
+        id: state.pathParameters['id']!,
+      ),
     ),
     GoRoute(
-      path: '/checkout',
-      builder: (context, state) => const CheckoutPage(),
+      path: '/checkout/:id',
+      builder: (context, state) => CheckoutPage(
+        listingId: state.pathParameters['id']!,
+      ),
     ),
     GoRoute(
       path: '/create-listing',

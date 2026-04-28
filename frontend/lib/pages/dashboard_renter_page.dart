@@ -5,6 +5,8 @@ import '../components/app_components.dart';
 import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
+import '../services/cowbnb_api.dart';
+import '../models/api_models.dart';
 
 class DashboardRenterPage extends StatefulWidget {
   const DashboardRenterPage({Key? key}) : super(key: key);
@@ -14,33 +16,35 @@ class DashboardRenterPage extends StatefulWidget {
 }
 
 class _DashboardRenterPageState extends State<DashboardRenterPage> {
-  final List<AppNotification> notifications = const [
-    AppNotification(
-      title: 'Nuevo mensaje del propietario',
-      description: 'Tienes una actualizacion en Rancho del Sur.',
-      time: 'Hace 8 min',
-      icon: Icons.message,
-    ),
-    AppNotification(
-      title: 'Reserva confirmada',
-      description: 'Tu reserva para Valle de los Girasoles fue confirmada.',
-      time: 'Hace 1 h',
-      icon: Icons.check_circle,
-      isRead: true,
-    ),
-  ];
+  late final CowbnbApi _api;
+  late Future<RenterDashboardData> _dashboardFuture;
+  late Future<List<AppNotification>> _notificationsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _api = CowbnbApi();
+    _dashboardFuture = _api.fetchRenterDashboard();
+    _notificationsFuture = _api.fetchNotifications();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      body: FutureBuilder<RenterDashboardData>(
+        future: _dashboardFuture,
+        builder: (context, snapshot) {
+          final dashboard = snapshot.data;
+          final stats = dashboard?.stats;
+          final reservas = dashboard?.reservas ?? const <ReservaItem>[];
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               const SizedBox(height: AppSpacing.md),
 
               // Welcome Section
@@ -99,12 +103,12 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
               const SizedBox(height: AppSpacing.lg),
 
               // Stats Grid
-              _buildStatsGrid(),
+              _buildStatsGrid(stats),
 
               const SizedBox(height: AppSpacing.lg),
 
               // Bookings Section
-              _buildBookingsSection(),
+              _buildBookingsSection(reservas),
 
               const SizedBox(height: AppSpacing.lg),
 
@@ -113,8 +117,11 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
 
               const SizedBox(height: 100),
             ],
-          ),
-        ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
       bottomNavigationBar: const AppBottomNav(activeItem: AppNavItem.profile),
     );
@@ -138,12 +145,18 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
         ],
       ),
       actions: [
-        NotificationBellButton(
-          notifications: notifications,
-          onPressed: () => showNotificationsModal(
-            context,
-            notifications: notifications,
-          ),
+        FutureBuilder<List<AppNotification>>(
+          future: _notificationsFuture,
+          builder: (context, snapshot) {
+            final notifications = snapshot.data ?? const <AppNotification>[];
+            return NotificationBellButton(
+              notifications: notifications,
+              onPressed: () => showNotificationsModal(
+                context,
+                notifications: notifications,
+              ),
+            );
+          },
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -157,7 +170,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
     );
   }
 
-  Widget _buildStatsGrid() {
+  Widget _buildStatsGrid(DashboardStats? stats) {
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -169,22 +182,22 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
         _buildStatCard(
           icon: Icons.calendar_month,
           label: 'Reservas Activas',
-          value: '03',
+          value: '${stats?.activeReservationsCount ?? 0}',
         ),
         _buildStatCard(
           icon: Icons.favorite,
           label: 'Favoritos',
-          value: '12',
+          value: '${stats?.favoritesCount ?? 0}',
         ),
         _buildStatCard(
           icon: Icons.message,
           label: 'Mensajes',
-          value: '05',
+          value: '${stats?.messagesCount ?? 0}',
         ),
         _buildStatCard(
           icon: Icons.landscape,
           label: 'Hectáreas',
-          value: '45.2',
+          value: '${stats?.hectares ?? 0}',
         ),
       ],
     );
@@ -223,7 +236,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
     );
   }
 
-  Widget _buildBookingsSection() {
+  Widget _buildBookingsSection(List<ReservaItem> reservas) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -246,39 +259,40 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        _buildBookingCard(
-          title: 'Valle de los Girasoles',
-          location: 'Córdoba, Argentina • 12 Hectáreas',
-          image:
-              'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop',
-          status: 'Confirmado',
-          dates: '15 Oct - 20 Dic',
-          price: '\$1,200/mes',
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _buildBookingCard(
-          title: 'Laderas del Sur',
-          location: 'Mendoza, Argentina • 8 Hectáreas',
-          image:
-              'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1000&auto=format&fit=crop',
-          status: 'Pendiente',
-          dates: '01 Nov - 15 Ene',
-          price: '\$850/mes',
-        ),
+        if (reservas.isEmpty)
+          Text(
+            'No tienes reservas aun.',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ...reservas.map((reserva) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+          child: _buildBookingCard(
+                title: reserva.title,
+                location: reserva.location,
+                image: reserva.image,
+                status: reserva.status,
+                dates: reserva.dates,
+                price: reserva.price,
+                listingId: reserva.listingId,   // <-- agrega esto
+              ),
+            )),
       ],
     );
   }
 
   Widget _buildBookingCard({
-    required String title,
-    required String location,
-    required String image,
-    required String status,
-    required String dates,
-    required String price,
-  }) {
+      required String title,
+      required String location,
+      required String image,
+      required String status,
+      required String dates,
+      required String price,
+      required String listingId,   // <-- agrega esto
+    }) {
     return GestureDetector(
-      onTap: () => context.go('/listing'),
+      onTap: () => context.go('/listing/${listingId.isEmpty ? 'placeholder' : listingId}'),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

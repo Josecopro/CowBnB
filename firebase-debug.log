@@ -1,0 +1,157 @@
+[debug] [2026-04-28T19:01:34.242Z] ----------------------------------------------------------------------
+[debug] [2026-04-28T19:01:34.245Z] Command:       /home/sanma613/.nvm/versions/node/v20.20.0/bin/node /home/sanma613/.npm/_npx/ba4f1959e38407b5/node_modules/.bin/firebase emulators:start --only functions,firestore
+[debug] [2026-04-28T19:01:34.245Z] CLI Version:   15.15.0
+[debug] [2026-04-28T19:01:34.246Z] Platform:      linux
+[debug] [2026-04-28T19:01:34.246Z] Node Version:  v20.20.0
+[debug] [2026-04-28T19:01:34.246Z] Time:          Tue Apr 28 2026 14:01:34 GMT-0500 (Colombia Standard Time)
+[debug] [2026-04-28T19:01:34.246Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-04-28T19:01:35.132Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-04-28T19:01:35.133Z] > authorizing via signed-in user (santiagomachadoserna@gmail.com)
+[debug] [2026-04-28T19:01:35.176Z] openjdk version "21.0.10" 2026-01-20
+OpenJDK Runtime Environment (build 21.0.10+7-Ubuntu-124.04)
+
+[debug] [2026-04-28T19:01:35.177Z] OpenJDK 64-Bit Server VM (build 21.0.10+7-Ubuntu-124.04, mixed mode, sharing)
+
+[debug] [2026-04-28T19:01:35.190Z] Parsed Java major version: 21
+[info] i  emulators: Starting emulators: functions, firestore {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: functions, firestore"}}
+[debug] [2026-04-28T19:01:35.197Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-04-28T19:01:35.197Z] [firestore] Firestore Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-04-28T19:01:35.198Z] [firestore.websocket] websocket server for firestore only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-04-28T19:01:35.198Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2026-04-28T19:01:35.205Z] Write emulator hub locator at /tmp/hub-cowbnb-ccd0d.json
+[debug] [2026-04-28T19:01:35.210Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-04-28T19:01:35.211Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-04-28T19:01:35.211Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-04-28T19:01:35.211Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[warn] ⚠  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, database, hosting, pubsub, storage, dataconnect {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, auth, database, hosting, pubsub, storage, dataconnect\u001b[22m"}}
+[debug] [2026-04-28T19:01:35.246Z] defaultcredentials: writing to file /home/sanma613/.config/firebase/santiagomachadoserna_gmail_com_application_default_credentials.json
+[debug] [2026-04-28T19:01:35.249Z] Setting GAC to /home/sanma613/.config/firebase/santiagomachadoserna_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to /home/sanma613/.config/firebase/santiagomachadoserna_gmail_com_application_default_credentials.json"}}
+[debug] [2026-04-28T19:01:35.251Z] Checked if tokens are valid: true, expires at: 1777405872108
+[debug] [2026-04-28T19:01:35.251Z] Checked if tokens are valid: true, expires at: 1777405872108
+[debug] [2026-04-28T19:01:35.253Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/cowbnb-ccd0d/adminSdkConfig [none]
+[debug] [2026-04-28T19:01:35.998Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/cowbnb-ccd0d/adminSdkConfig 200
+[debug] [2026-04-28T19:01:35.999Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/cowbnb-ccd0d/adminSdkConfig {"projectId":"cowbnb-ccd0d","storageBucket":"cowbnb-ccd0d.firebasestorage.app"}
+[debug] [2026-04-28T19:01:36.018Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2026-04-28T19:01:36.018Z] Ignoring unsupported arg: single_project_mode_error {"metadata":{"emulator":{"name":"firestore"},"message":"Ignoring unsupported arg: single_project_mode_error"}}
+[debug] [2026-04-28T19:01:36.018Z] Starting Firestore Emulator with command {"binary":"java","args":["-Dgoogle.cloud_firestore.debug_log_level=FINE","-Duser.language=en","-jar","/home/sanma613/.cache/firebase/emulators/cloud-firestore-emulator-v1.20.4.jar","--host","127.0.0.1","--port",8080,"--websocket_port",9150,"--database-edition","standard","--project_id","cowbnb-ccd0d","--rules","/home/sanma613/Desktop/CowBnB/backend/firestore.rules","--single_project_mode",true,"--functions_emulator","127.0.0.1:5001"],"optionalArgs":["port","webchannel_port","host","rules","websocket_port","database-edition","functions_emulator","seed_from_export","project_id","single_project_mode"],"joinArgs":false,"shell":false,"port":8080} {"metadata":{"emulator":{"name":"firestore"},"message":"Starting Firestore Emulator with command {\"binary\":\"java\",\"args\":[\"-Dgoogle.cloud_firestore.debug_log_level=FINE\",\"-Duser.language=en\",\"-jar\",\"/home/sanma613/.cache/firebase/emulators/cloud-firestore-emulator-v1.20.4.jar\",\"--host\",\"127.0.0.1\",\"--port\",8080,\"--websocket_port\",9150,\"--database-edition\",\"standard\",\"--project_id\",\"cowbnb-ccd0d\",\"--rules\",\"/home/sanma613/Desktop/CowBnB/backend/firestore.rules\",\"--single_project_mode\",true,\"--functions_emulator\",\"127.0.0.1:5001\"],\"optionalArgs\":[\"port\",\"webchannel_port\",\"host\",\"rules\",\"websocket_port\",\"database-edition\",\"functions_emulator\",\"seed_from_export\",\"project_id\",\"single_project_mode\"],\"joinArgs\":false,\"shell\":false,\"port\":8080}"}}
+[info] i  firestore: Firestore Emulator logging to firestore-debug.log {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator logging to \u001b[1mfirestore-debug.log\u001b[22m"}}
+[debug] [2026-04-28T19:01:37.348Z] Apr 28, 2026 2:01:37 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start
+INFO: Started WebSocket server on ws://127.0.0.1:9150
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Apr 28, 2026 2:01:37 PM com.google.cloud.datastore.emulator.firestore.websocket.WebSocketServer start\nINFO: Started WebSocket server on ws://127.0.0.1:9150\n"}}
+[debug] [2026-04-28T19:01:37.397Z] 
+API endpoint: http://127.0.0.1:8080
+Database Edition: STANDARD
+ {"metadata":{"emulator":{"name":"firestore"},"message":"\nAPI endpoint: http://127.0.0.1:8080\nDatabase Edition: STANDARD\n"}}
+[debug] [2026-04-28T19:01:37.398Z] Database Mode: CLOUD_FIRESTORE
+
+If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
+
+   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+
+If you are running a Firestore in Datastore Mode project, run:
+
+   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080
+
+Note: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.
+Dev App Server is now running.
+
+ {"metadata":{"emulator":{"name":"firestore"},"message":"Database Mode: CLOUD_FIRESTORE\n\nIf you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:\n\n   export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080\n\nIf you are running a Firestore in Datastore Mode project, run:\n\n   export DATASTORE_EMULATOR_HOST=127.0.0.1:8080\n\nNote: Support for Datastore Mode is in preview. If you encounter any bugs please file at https://github.com/firebase/firebase-tools/issues.\nDev App Server is now running.\n\n"}}
+[info] ✔  firestore: Firestore Emulator was started in standard edition. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator was started in standard edition."}}
+[info] ✔  firestore: Firestore Emulator UI websocket is running on 9150. {"metadata":{"emulator":{"name":"firestore"},"message":"Firestore Emulator UI websocket is running on 9150."}}
+[info] i  functions: Watching "/home/sanma613/Desktop/CowBnB/backend/functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"/home/sanma613/Desktop/CowBnB/backend/functions\" for Cloud Functions..."}}
+[debug] [2026-04-28T19:01:37.456Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-04-28T19:01:38.169Z] > [functions] package.json contents: {
+  "name": "cowbnb-functions",
+  "private": true,
+  "main": "lib/index.js",
+  "engines": {
+    "node": "18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "serve": "npm run build && npx -y firebase-tools@latest emulators:start --only functions",
+    "shell": "npm run build && npx -y firebase-tools@latest functions:shell",
+    "start": "npm run shell",
+    "deploy": "npx -y firebase-tools@latest deploy --only functions",
+    "logs": "npx -y firebase-tools@latest functions:log"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.5.0",
+    "firebase-functions": "^5.1.0",
+    "helmet": "^7.1.0",
+    "winston": "^3.13.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.12"
+  }
+}
+[debug] [2026-04-28T19:01:38.169Z] Building nodejs source
+[debug] [2026-04-28T19:01:38.170Z] Failed to find version of module node: reached end of search path /home/sanma613/Desktop/CowBnB/backend/functions/node_modules
+[warn] ⚠  functions: Your requested "node" version "18" doesn't match your global version "20". Using node@20 from host. 
+[debug] [2026-04-28T19:01:38.172Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-04-28T19:01:38.176Z] Found firebase-functions binary at '/home/sanma613/Desktop/CowBnB/backend/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8981
+
+[error] Error: Cannot find module '../config/firebase.config'
+Require stack:
+- /home/sanma613/Desktop/CowBnB/backend/functions/lib/index.js
+- /home/sanma613/Desktop/CowBnB/backend/functions/node_modules/firebase-functions/lib/runtime/loader.js
+- /home/sanma613/Desktop/CowBnB/backend/functions/node_modules/firebase-functions/lib/bin/firebase-functions.js
+    at Module._resolveFilename (node:internal/modules/cjs/loader:1207:15)
+    at Module._load (node:internal/modules/cjs/loader:1038:27)
+    at Module.require (node:internal/modules/cjs/loader:1289:19)
+    at require (node:internal/modules/helpers:182:18)
+    at Object.<anonymous> (/home/sanma613/Desktop/CowBnB/backend/functions/lib/index.js:50:27)
+    at Module._compile (node:internal/modules/cjs/loader:1521:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1623:10)
+    at Module.load (node:internal/modules/cjs/loader:1266:32)
+    at Module._load (node:internal/modules/cjs/loader:1091:12)
+    at Module.require (node:internal/modules/cjs/loader:1289:19) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    '/home/sanma613/Desktop/CowBnB/backend/functions/lib/index.js',
+    '/home/sanma613/Desktop/CowBnB/backend/functions/node_modules/firebase-functions/lib/runtime/loader.js',
+    '/home/sanma613/Desktop/CowBnB/backend/functions/node_modules/firebase-functions/lib/bin/firebase-functions.js'
+  ]
+}
+
+[debug] [2026-04-28T19:01:38.513Z] Got response code 400; body Failed to generate manifest from function source: Error: Cannot find module '../config/firebase.config'
+Require stack:
+- /home/sanma613/Desktop/CowBnB/backend/functions/lib/index.js
+- /home/sanma613/Desktop/CowBnB/backend/functions/node_modules/firebase-functions/lib/runtime/loader.js
+- /home/sanma613/Desktop/CowBnB/backend/functions/node_modules/firebase-functions/lib/bin/firebase-functions.js
+[error] ⬢  functions: Failed to load function definition from source: FirebaseError: Functions codebase could not be analyzed successfully. It may have a syntax or runtime error {"metadata":{"emulator":{"name":"functions"},"message":"Failed to load function definition from source: FirebaseError: Functions codebase could not be analyzed successfully. It may have a syntax or runtime error"}}
+[debug] [2026-04-28T19:01:42.537Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: connect ECONNREFUSED 127.0.0.1:40001. If you are not running the Firebase SQL Connect VSCode extension, this is expected and not an issue.
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌───────────┬────────────────┬─────────────────────────────────┐
+│ Emulator  │ Host:Port      │ View in Emulator UI             │
+├───────────┼────────────────┼─────────────────────────────────┤
+│ Functions │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions │
+├───────────┼────────────────┼─────────────────────────────────┤
+│ Firestore │ 127.0.0.1:8080 │ http://127.0.0.1:4000/firestore │
+└───────────┴────────────────┴─────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500, 9150
+
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 
+[debug] [2026-04-28T19:06:24.359Z] [work-queue] {"queuedWork":["/cowbnb-ccd0d/us-central1/api/terrenos-2026-04-28T19:06:24.359Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-04-28T19:06:24.359Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/cowbnb-ccd0d/us-central1/api/terrenos-2026-04-28T19:06:24.359Z"],"workRunningCount":1}
+[debug] [2026-04-28T19:06:24.363Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-04-28T19:09:34.435Z] [work-queue] {"queuedWork":["/cowbnb-ccd0d/us-central1/api/terrenos-2026-04-28T19:09:34.435Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
+[debug] [2026-04-28T19:09:34.435Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/cowbnb-ccd0d/us-central1/api/terrenos-2026-04-28T19:09:34.435Z"],"workRunningCount":1}
+[debug] [2026-04-28T19:09:34.436Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}

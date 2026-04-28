@@ -4,6 +4,8 @@ import '../design_tokens.dart';
 import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
+import '../services/cowbnb_api.dart';
+import '../models/api_models.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -15,26 +17,20 @@ class ExplorePage extends StatefulWidget {
 class _ExplorePageState extends State<ExplorePage> {
   final TextEditingController searchController = TextEditingController();
 
-  final List<AppNotification> notifications = const [
-    AppNotification(
-      title: 'Nuevos terrenos cerca de ti',
-      description: 'Se agregaron 3 terrenos en un radio de 30 km.',
-      time: 'Hace 12 min',
-      icon: Icons.travel_explore,
-    ),
-    AppNotification(
-      title: 'Cambio en una reserva',
-      description: 'Tu solicitud para Laderas del Sur fue actualizada.',
-      time: 'Hace 1 h',
-      icon: Icons.calendar_today,
-      isRead: true,
-    ),
-  ];
+  late final CowbnbApi _api;
+  late Future<ExploreData> _exploreFuture;
 
   @override
   void dispose() {
     searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _api = CowbnbApi();
+    _exploreFuture = _api.fetchExplore();
   }
 
   @override
@@ -51,73 +47,88 @@ class _ExplorePageState extends State<ExplorePage> {
           ),
         ),
         actions: [
-          NotificationBellButton(
-            notifications: notifications,
-            onPressed: () => showNotificationsModal(
-              context,
-              notifications: notifications,
-            ),
+          FutureBuilder<ExploreData>(
+            future: _exploreFuture,
+            builder: (context, snapshot) {
+              final notifications = snapshot.data?.notifications ?? const <AppNotification>[];
+              return NotificationBellButton(
+                notifications: notifications,
+                onPressed: () => showNotificationsModal(
+                  context,
+                  notifications: notifications,
+                ),
+              );
+            },
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: searchController,
-                decoration: InputDecoration(
-                  hintText: 'Buscar por ciudad, precio o caracteristica',
-                  prefixIcon: const Icon(Icons.search),
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    borderSide: const BorderSide(color: AppColors.border),
+      body: FutureBuilder<ExploreData>(
+        future: _exploreFuture,
+        builder: (context, snapshot) {
+          final listings = snapshot.data?.listings ?? const <Listing>[];
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Buscar por ciudad, precio o caracteristica',
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        borderSide: const BorderSide(color: AppColors.border),
+                      ),
+                    ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                    borderSide: const BorderSide(color: AppColors.border),
+                  const SizedBox(height: AppSpacing.md),
+                  Wrap(
+                    spacing: AppSpacing.sm,
+                    runSpacing: AppSpacing.sm,
+                    children: const [
+                      _FilterChip(label: 'Disponibles ahora', icon: Icons.bolt),
+                      _FilterChip(label: 'Con riego', icon: Icons.water_drop),
+                      _FilterChip(label: 'Menos de 10 ha', icon: Icons.square_foot),
+                      _FilterChip(label: 'Con energia', icon: Icons.electric_bolt),
+                    ],
                   ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: const [
-                  _FilterChip(label: 'Disponibles ahora', icon: Icons.bolt),
-                  _FilterChip(label: 'Con riego', icon: Icons.water_drop),
-                  _FilterChip(label: 'Menos de 10 ha', icon: Icons.square_foot),
-                  _FilterChip(label: 'Con energia', icon: Icons.electric_bolt),
+                  const SizedBox(height: AppSpacing.lg),
+                  Text('Terrenos destacados', style: AppTextStyles.headlineSmall),
+                  const SizedBox(height: AppSpacing.md),
+                  if (listings.isEmpty)
+                    Text(
+                      'No hay terrenos disponibles por ahora.',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ...listings.map((listing) => Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                        child: _buildExploreCard(
+                          title: listing.title,
+                          location: listing.location,
+                          price: '\$${listing.priceMonthly}/mes',
+                          score: listing.ndviScore != null
+                              ? 'NDVI ${listing.ndviScore}'
+                              : 'NDVI --',
+                          image: listing.imageUrl,
+                          onTap: () => context.go('/listing/${listing.id}'),
+                        ),
+                      )),
+                  const SizedBox(height: 100),
                 ],
               ),
-              const SizedBox(height: AppSpacing.lg),
-              Text('Terrenos destacados', style: AppTextStyles.headlineSmall),
-              const SizedBox(height: AppSpacing.md),
-              _buildExploreCard(
-                title: 'Pradera del Lago',
-                location: 'Bariloche, Argentina',
-                price: '\$1,450/mes',
-                score: 'NDVI 0.82',
-                image:
-                    'https://images.unsplash.com/photo-1472396961693-142e6e269027?q=80&w=1200&auto=format&fit=crop',
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _buildExploreCard(
-                title: 'Campos de Santa Elena',
-                location: 'Mendoza, Argentina',
-                price: '\$980/mes',
-                score: 'NDVI 0.74',
-                image:
-                    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1200&auto=format&fit=crop',
-              ),
-              const SizedBox(height: 100),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
       bottomNavigationBar: const AppBottomNav(activeItem: AppNavItem.explore),
     );
@@ -129,9 +140,10 @@ class _ExplorePageState extends State<ExplorePage> {
     required String price,
     required String score,
     required String image,
+    VoidCallback? onTap,
   }) {
     return GestureDetector(
-      onTap: () => context.go('/listing'),
+      onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

@@ -17,6 +17,15 @@ import { createRequestLogger } from '../shared/logging';
 import { verifyFirebaseToken } from '../shared/auth';
 import { errorHandler } from '../shared/errors';
 
+// Routers
+import authRouter from './auth';
+import terrenosRouter from './terrenos';
+import reservasRouter from './reservas';
+import dashboardRouter from './dashboard';
+import favoritesRouter from './favorites';
+import conversationsRouter from './conversations';
+import notificationsRouter from './notifications';
+
 // Initialize Firebase
 initializeFirebase();
 
@@ -60,13 +69,22 @@ app.get('/health', (req, res) => {
 });
 
 // Protected routes placeholder
-app.get('/protected', verifyFirebaseToken, (req, res) => {
+app.get('/protected', verifyFirebaseToken, (req: any, res) => {
   res.json({
     message: 'This is a protected route',
     user: req.user,
     requestId: req.requestId,
   });
 });
+
+// API routes
+app.use('/auth', authRouter);
+app.use('/terrenos', terrenosRouter);
+app.use('/reservas', reservasRouter);
+app.use('/dashboard', dashboardRouter);
+app.use('/favorites', favoritesRouter);
+app.use('/conversations', conversationsRouter);
+app.use('/notifications', notificationsRouter);
 
 // Error handling (must be last)
 app.use(errorHandler);

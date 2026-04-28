@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2019",
+    "outDir": "lib",
+    "rootDir": "..",
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "noImplicitAny": false
+  },
+  "include": [
+    "../functions/**/*.ts",
+    "../shared/**/*.ts",
+    "../config/**/*.ts"
+  ],
+  "exclude": ["node_modules", "lib"]
+}

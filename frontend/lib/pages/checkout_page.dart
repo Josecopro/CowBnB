@@ -4,9 +4,13 @@ import '../design_tokens.dart';
 import '../components/app_components.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
+import '../services/cowbnb_api.dart';
+import '../models/api_models.dart';
 
 class CheckoutPage extends StatefulWidget {
-  const CheckoutPage({Key? key}) : super(key: key);
+  const CheckoutPage({Key? key, required this.listingId}) : super(key: key);
+
+  final String listingId;
 
   @override
   State<CheckoutPage> createState() => _CheckoutPageState();
@@ -15,6 +19,13 @@ class CheckoutPage extends StatefulWidget {
 class _CheckoutPageState extends State<CheckoutPage> {
   DateTime? startDate;
   DateTime? endDate;
+  late final CowbnbApi _api;
+
+  @override
+  void initState() {
+    super.initState();
+    _api = CowbnbApi();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,52 +52,58 @@ class _CheckoutPageState extends State<CheckoutPage> {
           },
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Listing Summary
-              AppCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(AppRadius.lg),
-                      child: AppNetworkImage(
-                        imageUrl:
-                            'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop',
-                        height: 150,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        memCacheWidth: 800,
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      'Valle de los Girasoles',
-                      style: AppTextStyles.label.copyWith(
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
+      body: FutureBuilder<Listing>(
+        future: _api.fetchListing(widget.listingId),
+        builder: (context, snapshot) {
+          final listing = snapshot.data;
+          if (listing == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Listing Summary
+                  AppCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.location_on,
-                            size: 16, color: AppColors.textSecondary),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Córdoba, Argentina • 12 Hectáreas',
-                          style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                          child: AppNetworkImage(
+                            imageUrl: listing.imageUrl,
+                            height: 150,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            memCacheWidth: 800,
                           ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        Text(
+                          listing.title,
+                          style: AppTextStyles.label.copyWith(
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on,
+                                size: 16, color: AppColors.textSecondary),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${listing.location} • ${listing.sizeHectares ?? 0} Hectáreas',
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
 
               const SizedBox(height: AppSpacing.lg),
 
@@ -202,7 +219,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
               const SizedBox(height: AppSpacing.md),
 
-              _buildPriceRow('Noche (12 hectáreas)', '\$1,200', '1'),
+              _buildPriceRow('Noche (${listing.sizeHectares ?? 0} hectáreas)', '\$${listing.priceMonthly}', '1'),
               _buildPriceRow('Gastos de servicio', '\$120', ''),
               _buildPriceRow('Impuestos', '\$132', ''),
 
@@ -226,7 +243,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       ),
                     ),
                     Text(
-                      '\$1,452',
+                      '\$${listing.priceMonthly}',
                       style: AppTextStyles.headline.copyWith(
                         color: AppColors.primary,
                         fontSize: 20,
@@ -264,7 +281,28 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    if (startDate == null || endDate == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Selecciona fechas de reserva.'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      return;
+                    }
+
+                    final payload = ReservaPayload(
+                      terrenoId: listing.id,
+                      renterId: 'demo-renter',
+                      ownerId: 'demo-owner',
+                      startDate: startDate!.millisecondsSinceEpoch,
+                      endDate: endDate!.millisecondsSinceEpoch,
+                      priceMonthly: listing.priceMonthly,
+                    );
+
+                    await _api.createReserva(payload);
+
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('¡Reserva confirmada!'),
@@ -290,9 +328,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
 
               const SizedBox(height: AppSpacing.lg),
-            ],
-          ),
-        ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
       bottomNavigationBar: const AppBottomNav(activeItem: AppNavItem.profile),
     );

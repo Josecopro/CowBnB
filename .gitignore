@@ -19,3 +19,9 @@ frontend/.dart*
 frontend/.*
 
 backend/.env
+**/node_modules/*
+backend/functions/lib/
+backend/shared/*.js
+backend/shared/*.js.map
+backend/config/*.js
+backend/config/*.js.map

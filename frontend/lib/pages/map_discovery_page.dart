@@ -4,6 +4,8 @@ import '../design_tokens.dart';
 import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
+import '../services/cowbnb_api.dart';
+import '../models/api_models.dart';
 
 class MapDiscoveryPage extends StatefulWidget {
   const MapDiscoveryPage({Key? key}) : super(key: key);
@@ -13,23 +15,28 @@ class MapDiscoveryPage extends StatefulWidget {
 }
 
 class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
-  final List<AppNotification> notifications = const [
-    AppNotification(
-      title: 'Nuevos terrenos en tu zona',
-      description: 'Aparecieron 2 opciones con disponibilidad inmediata.',
-      time: 'Hace 20 min',
-      icon: Icons.travel_explore,
-    ),
-  ];
+  late final CowbnbApi _api;
+  late Future<ExploreData> _exploreFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _api = CowbnbApi();
+    _exploreFuture = _api.fetchExplore();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
+      body: FutureBuilder<ExploreData>(
+        future: _exploreFuture,
+        builder: (context, snapshot) {
+          final listings = snapshot.data?.listings ?? const <Listing>[];
+          return SingleChildScrollView(
+            child: Column(
+              children: [
             // Search Bar
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
@@ -81,17 +88,23 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                   Positioned(
                     top: 100,
                     left: 60,
-                    child: _buildePricePin('\$4,200'),
+                    child: _buildePricePin(listings.isNotEmpty
+                        ? '\$${listings.first.priceMonthly}'
+                        : '\$0'),
                   ),
                   Positioned(
                     bottom: 80,
                     right: 80,
-                    child: _buildePricePin('\$2,850'),
+                    child: _buildePricePin(listings.length > 1
+                        ? '\$${listings[1].priceMonthly}'
+                        : '\$0'),
                   ),
                   Positioned(
                     top: 160,
                     right: 60,
-                    child: _buildePricePin('\$3,100', highlighted: true),
+                    child: _buildePricePin(listings.length > 2
+                        ? '\$${listings[2].priceMonthly}'
+                        : '\$0', highlighted: true),
                   ),
 
                   // Control Buttons (Top Right)
@@ -199,27 +212,20 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                children: [
-                  _buildListingCard(
-                    title: 'Rancho Pradera Dorada',
-                    location: 'Boise, Idaho',
-                    image:
-                        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop',
-                    price: '\$1,200',
-                    rating: 4.9,
-                    acres: '120 hectareas',
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  _buildListingCard(
-                    title: 'Parcelas del Valle del Rio',
-                    location: 'Eugene, Oregon',
-                    image:
-                        'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1000&auto=format&fit=crop',
-                    price: '\$950',
-                    rating: 4.7,
-                    acres: '45 hectareas',
-                  ),
-                ],
+                children: listings.map((listing) {
+                  return Padding(
+                    padding: const EdgeInsets.only(right: AppSpacing.md),
+                    child: _buildListingCard(
+                      id: listing.id,
+                      title: listing.title,
+                      location: listing.location,
+                      image: listing.imageUrl,
+                      price: '\$${listing.priceMonthly}',
+                      rating: listing.rating?.toDouble() ?? 0,
+                      acres: '${listing.sizeHectares ?? 0} hectareas',
+                    ),
+                  );
+                }).toList(),
               ),
             ),
 
@@ -251,8 +257,10 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
             ),
 
             const SizedBox(height: 100),
-          ],
-        ),
+              ],
+            ),
+          );
+        },
       ),
       bottomNavigationBar: const AppBottomNav(activeItem: AppNavItem.explore),
     );
@@ -280,12 +288,18 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
         ],
       ),
       actions: [
-        NotificationBellButton(
-          notifications: notifications,
-          onPressed: () => showNotificationsModal(
-            context,
-            notifications: notifications,
-          ),
+        FutureBuilder<ExploreData>(
+          future: _exploreFuture,
+          builder: (context, snapshot) {
+            final notifications = snapshot.data?.notifications ?? const <AppNotification>[];
+            return NotificationBellButton(
+              notifications: notifications,
+              onPressed: () => showNotificationsModal(
+                context,
+                notifications: notifications,
+              ),
+            );
+          },
         ),
       ],
     );
@@ -340,6 +354,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
   }
 
   Widget _buildListingCard({
+    required String id,
     required String title,
     required String location,
     required String image,
@@ -348,7 +363,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
     required String acres,
   }) {
     return GestureDetector(
-      onTap: () => context.go('/listing'),
+      onTap: () => context.go('/listing/$id'),
       child: Container(
         width: 280,
         decoration: BoxDecoration(

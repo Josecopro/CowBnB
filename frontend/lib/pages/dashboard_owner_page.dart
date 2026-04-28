@@ -4,6 +4,8 @@ import '../design_tokens.dart';
 import '../components/app_components.dart';
 import '../components/notifications_modal.dart';
 import '../components/optimized_network_image.dart';
+import '../services/cowbnb_api.dart';
+import '../models/api_models.dart';
 
 class DashboardOwnerPage extends StatefulWidget {
   const DashboardOwnerPage({Key? key}) : super(key: key);
@@ -13,33 +15,35 @@ class DashboardOwnerPage extends StatefulWidget {
 }
 
 class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
-  final List<AppNotification> notifications = const [
-    AppNotification(
-      title: 'Nueva consulta de arrendatario',
-      description: 'Camila pregunto por disponibilidad en Tierra Verde.',
-      time: 'Hace 5 min',
-      icon: Icons.chat_bubble,
-    ),
-    AppNotification(
-      title: 'Pago recibido',
-      description: 'Se recibio el pago mensual de Rancho del Sur.',
-      time: 'Hace 2 h',
-      icon: Icons.payments,
-      isRead: true,
-    ),
-  ];
+  late final CowbnbApi _api;
+  late Future<OwnerDashboardData> _dashboardFuture;
+  late Future<List<AppNotification>> _notificationsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _api = CowbnbApi();
+    _dashboardFuture = _api.fetchOwnerDashboard();
+    _notificationsFuture = _api.fetchNotifications();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: _buildAppBar(),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      body: FutureBuilder<OwnerDashboardData>(
+        future: _dashboardFuture,
+        builder: (context, snapshot) {
+          final dashboard = snapshot.data;
+          final stats = dashboard?.stats;
+          final properties = dashboard?.properties ?? const <Listing>[];
+          return SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               const SizedBox(height: AppSpacing.md),
 
               // Welcome Section
@@ -160,22 +164,22 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                   _buildStatCard(
                     icon: Icons.home,
                     label: 'Propiedades',
-                    value: '03',
+                    value: '${stats?.propertiesCount ?? 0}',
                   ),
                   _buildStatCard(
                     icon: Icons.check_circle,
                     label: 'Reservas Activas',
-                    value: '02',
+                    value: '${stats?.activeReservationsCount ?? 0}',
                   ),
                   _buildStatCard(
                     icon: Icons.people,
                     label: 'Arrendatarios',
-                    value: '08',
+                    value: '${stats?.rentersCount ?? 0}',
                   ),
                   _buildStatCard(
                     icon: Icons.visibility,
                     label: 'Visualizaciones',
-                    value: '342',
+                    value: '${stats?.viewsCount ?? 0}',
                   ),
                 ],
               ),
@@ -204,30 +208,30 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
 
               const SizedBox(height: AppSpacing.md),
 
-              _buildPropertyCard(
-                title: 'Rancho del Sur',
-                location: 'Mendoza, Argentina • 18 Hectáreas',
-                image:
-                    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop',
-                status: 'Activo',
-                earnings: '\$2,400/mes',
-              ),
-
-              const SizedBox(height: AppSpacing.md),
-
-              _buildPropertyCard(
-                title: 'Tierra Verde',
-                location: 'Córdoba, Argentina • 12 Hectáreas',
-                image:
-                    'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1000&auto=format&fit=crop',
-                status: 'Activo',
-                earnings: '\$1,800/mes',
-              ),
+              if (properties.isEmpty)
+                Text(
+                  'No hay propiedades registradas.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ...properties.map((listing) => Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: _buildPropertyCard(
+                      title: listing.title,
+                      location: '${listing.location} • ${listing.sizeHectares ?? 0} Hectáreas',
+                      image: listing.imageUrl,
+                      status: 'Activo',
+                      earnings: '\$${listing.priceMonthly}/mes',
+                    ),
+                  )),
 
               const SizedBox(height: 100),
-            ],
-          ),
-        ),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -250,12 +254,18 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
         ],
       ),
       actions: [
-        NotificationBellButton(
-          notifications: notifications,
-          onPressed: () => showNotificationsModal(
-            context,
-            notifications: notifications,
-          ),
+        FutureBuilder<List<AppNotification>>(
+          future: _notificationsFuture,
+          builder: (context, snapshot) {
+            final notifications = snapshot.data ?? const <AppNotification>[];
+            return NotificationBellButton(
+              notifications: notifications,
+              onPressed: () => showNotificationsModal(
+                context,
+                notifications: notifications,
+              ),
+            );
+          },
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),

@@ -45,7 +45,7 @@ export class FirestoreService {
       const requestId = getCurrentRequestId();
       logInfo('Document created', { collection, id: docRef.id }, requestId);
 
-      return docData as T;
+      return docData as unknown as T;
     } catch (error) {
       const requestId = getCurrentRequestId();
       logError('Failed to create document', error as Error, { collection }, requestId);

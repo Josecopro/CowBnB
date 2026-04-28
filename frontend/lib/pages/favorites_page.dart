@@ -4,6 +4,8 @@ import '../design_tokens.dart';
 import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
+import '../services/cowbnb_api.dart';
+import '../models/api_models.dart';
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
@@ -13,26 +15,17 @@ class FavoritesPage extends StatefulWidget {
 }
 
 class _FavoritesPageState extends State<FavoritesPage> {
-  final List<AppNotification> notifications = const [];
+  late final CowbnbApi _api;
+  late Future<List<FavoriteListing>> _favoritesFuture;
+  late Future<List<AppNotification>> _notificationsFuture;
 
-  final List<_FavoriteListing> favorites = <_FavoriteListing>[
-    const _FavoriteListing(
-      title: 'Valle Verde Premium',
-      location: 'Neuquen, Argentina',
-      price: '\$1,100/mes',
-      image:
-          'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1200&auto=format&fit=crop',
-      hectares: '16 ha',
-    ),
-    const _FavoriteListing(
-      title: 'Pradera Norte',
-      location: 'Cordoba, Argentina',
-      price: '\$890/mes',
-      image:
-          'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1200&auto=format&fit=crop',
-      hectares: '11 ha',
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _api = CowbnbApi();
+    _favoritesFuture = _api.fetchFavorites();
+    _notificationsFuture = _api.fetchNotifications();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,27 +41,41 @@ class _FavoritesPageState extends State<FavoritesPage> {
           ),
         ),
         actions: [
-          NotificationBellButton(
-            notifications: notifications,
-            onPressed: () => showNotificationsModal(
-              context,
-              notifications: notifications,
-            ),
+          FutureBuilder<List<AppNotification>>(
+            future: _notificationsFuture,
+            builder: (context, snapshot) {
+              final notifications = snapshot.data ?? const <AppNotification>[];
+              return NotificationBellButton(
+                notifications: notifications,
+                onPressed: () => showNotificationsModal(
+                  context,
+                  notifications: notifications,
+                ),
+              );
+            },
           ),
         ],
       ),
-      body: favorites.isEmpty ? _buildEmptyState() : _buildFavoritesList(),
+      body: FutureBuilder<List<FavoriteListing>>(
+        future: _favoritesFuture,
+        builder: (context, snapshot) {
+          final favorites = snapshot.data ?? const <FavoriteListing>[];
+          return favorites.isEmpty
+              ? _buildEmptyState()
+              : _buildFavoritesList(favorites);
+        },
+      ),
       bottomNavigationBar: const AppBottomNav(activeItem: AppNavItem.favorites),
     );
   }
 
-  Widget _buildFavoritesList() {
+  Widget _buildFavoritesList(List<FavoriteListing> favorites) {
     return ListView.separated(
       padding: const EdgeInsets.all(AppSpacing.md),
       itemBuilder: (context, index) {
-        final _FavoriteListing item = favorites[index];
+        final FavoriteListing item = favorites[index];
         return GestureDetector(
-          onTap: () => context.go('/listing'),
+          onTap: () => context.go('/listing/${item.id}'),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -122,11 +129,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       ),
                       IconButton(
                         icon: const Icon(Icons.favorite, color: AppColors.error),
-                        onPressed: () {
-                          setState(() {
-                            favorites.removeAt(index);
-                          });
-                        },
+                        onPressed: () {},
                       ),
                     ],
                   ),
@@ -173,20 +176,4 @@ class _FavoritesPageState extends State<FavoritesPage> {
     );
   }
 
-}
-
-class _FavoriteListing {
-  const _FavoriteListing({
-    required this.title,
-    required this.location,
-    required this.price,
-    required this.image,
-    required this.hectares,
-  });
-
-  final String title;
-  final String location;
-  final String price;
-  final String image;
-  final String hectares;
 }

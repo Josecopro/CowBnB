@@ -3,72 +3,84 @@ import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
+import '../services/cowbnb_api.dart';
+import '../models/api_models.dart';
 
 class ListingDetailsPage extends StatelessWidget {
-  const ListingDetailsPage({super.key});
+  const ListingDetailsPage({super.key, required this.id});
+
+  final String id;
 
   @override
   Widget build(BuildContext context) {
+    final api = CowbnbApi();
+
     return Scaffold(
       backgroundColor: AppColors.surface,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Stack(
+      body: FutureBuilder<Listing>(
+        future: api.fetchListing(id),
+        builder: (context, snapshot) {
+          final listing = snapshot.data;
+          if (listing == null) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppNetworkImage(
-                  imageUrl:
-                      'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop',
-                  height: 350,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  memCacheWidth: 1280,
-                ),
-                Positioned(
-                  top: 16,
-                  left: 16,
-                  child: GestureDetector(
-                    onTap: () {
-                      if (Navigator.canPop(context)) {
-                        Navigator.pop(context);
-                      } else {
-                        context.go('/explore');
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(AppSpacing.sm),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(AppRadius.md),
+                Stack(
+                  children: [
+                    AppNetworkImage(
+                      imageUrl: listing.imageUrl,
+                      height: 350,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      memCacheWidth: 1280,
+                    ),
+                    Positioned(
+                      top: 16,
+                      left: 16,
+                      child: GestureDetector(
+                        onTap: () {
+                          if (Navigator.canPop(context)) {
+                            Navigator.pop(context);
+                          } else {
+                            context.go('/explore');
+                          }
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(AppSpacing.sm),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(AppRadius.md),
+                          ),
+                          child: const Icon(Icons.arrow_back, color: AppColors.primary),
+                        ),
                       ),
-                      child: const Icon(Icons.arrow_back, color: AppColors.primary),
                     ),
-                  ),
-                ),
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSpacing.sm),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(AppRadius.md),
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: Container(
+                        padding: const EdgeInsets.all(AppSpacing.sm),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
+                        ),
+                        child: const Icon(Icons.favorite_border, color: AppColors.primary),
+                      ),
                     ),
-                    child: const Icon(Icons.favorite_border, color: AppColors.primary),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Valle de los Girasoles',
-                    style: AppTextStyles.headlineSmall.copyWith(fontSize: 28),
-                  ),
+                Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        listing.title,
+                        style: AppTextStyles.headlineSmall.copyWith(fontSize: 28),
+                      ),
                   const SizedBox(height: AppSpacing.sm),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -78,7 +90,7 @@ class ListingDetailsPage extends StatelessWidget {
                           const Icon(Icons.location_on, size: 16, color: AppColors.textSecondary),
                           const SizedBox(width: 4),
                           Text(
-                            'Cordoba, Argentina',
+                            listing.location,
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textSecondary,
                             ),
@@ -89,7 +101,7 @@ class ListingDetailsPage extends StatelessWidget {
                         children: [
                           const Icon(Icons.star, size: 16, color: Colors.amber),
                           const SizedBox(width: 4),
-                          Text('4.9', style: AppTextStyles.label),
+                          Text('${listing.rating ?? 0}', style: AppTextStyles.label),
                         ],
                       ),
                     ],
@@ -101,7 +113,7 @@ class ListingDetailsPage extends StatelessWidget {
                         child: _buildOverviewCard(
                           icon: Icons.landscape,
                           label: 'Tamano',
-                          value: '12 Hectareas',
+                          value: '${listing.sizeHectares ?? 0} Hectareas',
                         ),
                       ),
                       const SizedBox(width: AppSpacing.md),
@@ -141,7 +153,7 @@ class ListingDetailsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    'Este terreno ofrece 12 hectareas de tierra fertil con sistemas de riego modernos. Ideal para cultivos intensivos y ganaderia sostenible.',
+                    'Detalles disponibles en el backend.',
                     style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: AppSpacing.lg),
@@ -171,7 +183,7 @@ class ListingDetailsPage extends StatelessWidget {
                             Text('Precio por mes', style: AppTextStyles.labelSmall),
                             const SizedBox(height: 4),
                             Text(
-                              '\$1,200',
+                              '\$${listing.priceMonthly}',
                               style: AppTextStyles.headline.copyWith(
                                 color: AppColors.primary,
                                 fontSize: 24,
@@ -183,7 +195,7 @@ class ListingDetailsPage extends StatelessWidget {
                           width: 120,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () => context.go('/checkout'),
+                            onPressed: () => context.go('/checkout/${listing.id}'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               shape: RoundedRectangleBorder(
@@ -200,11 +212,13 @@ class ListingDetailsPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 100),
-                ],
-              ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
       bottomNavigationBar: const AppBottomNav(activeItem: AppNavItem.explore),
     );
