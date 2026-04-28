@@ -90,19 +90,16 @@ class _CreateListingPageState extends State<CreateListingPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Progress Indicator
               _buildProgressIndicator(),
 
               const SizedBox(height: AppSpacing.lg),
 
-              // Step Content
               if (currentStep == 0) _buildStep1(),
               if (currentStep == 1) _buildStep2(),
               if (currentStep == 2) _buildStep3(),
 
               const SizedBox(height: AppSpacing.lg),
 
-              // Navigation Buttons
               Row(
                 children: [
                   if (currentStep > 0)

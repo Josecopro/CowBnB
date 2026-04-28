@@ -65,7 +65,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Listing Summary
                   AppCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -107,7 +106,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
               const SizedBox(height: AppSpacing.lg),
 
-              // Date Selection
               Text(
                 'Fechas de Reserva',
                 style: AppTextStyles.label.copyWith(
@@ -210,7 +208,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
               const SizedBox(height: AppSpacing.lg),
 
-              // Price Breakdown
               Text(
                 'Detalles de Pago',
                 style: AppTextStyles.label.copyWith(
@@ -255,7 +252,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
               const SizedBox(height: AppSpacing.lg),
 
-              // Terms Checkbox
               Row(
                 children: [
                   Checkbox(
@@ -276,7 +272,6 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
               const SizedBox(height: AppSpacing.lg),
 
-              // CTA Button
               SizedBox(
                 width: double.infinity,
                 height: 56,

@@ -1,21 +1,8 @@
 import 'package:flutter/material.dart';
 import '../design_tokens.dart';
+import '../models/notification_model.dart';
 
-class AppNotification {
-  const AppNotification({
-    required this.title,
-    required this.description,
-    required this.time,
-    this.isRead = false,
-    this.icon = Icons.notifications,
-  });
-
-  final String title;
-  final String description;
-  final String time;
-  final bool isRead;
-  final IconData icon;
-}
+export '../models/notification_model.dart';
 
 int unreadNotificationsCount(List<AppNotification> notifications) {
   return notifications.where((notification) => !notification.isRead).length;

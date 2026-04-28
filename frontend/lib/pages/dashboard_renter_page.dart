@@ -5,6 +5,7 @@ import '../components/app_components.dart';
 import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
+import '../components/stat_card.dart';
 import '../services/cowbnb_api.dart';
 import '../models/api_models.dart';
 
@@ -47,7 +48,6 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                 children: [
               const SizedBox(height: AppSpacing.md),
 
-              // Welcome Section
               Text(
                 'Panel del Arrendatario',
                 style: AppTextStyles.labelSmall,
@@ -79,7 +79,6 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
 
               const SizedBox(height: AppSpacing.lg),
 
-              // Action Buttons
               Row(
                 children: [
                   Expanded(
@@ -102,17 +101,14 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
 
               const SizedBox(height: AppSpacing.lg),
 
-              // Stats Grid
               _buildStatsGrid(stats),
 
               const SizedBox(height: AppSpacing.lg),
 
-              // Bookings Section
               _buildBookingsSection(reservas),
 
               const SizedBox(height: AppSpacing.lg),
 
-              // Secondary Actions
               _buildSecondaryActions(),
 
               const SizedBox(height: 100),
@@ -179,60 +175,27 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
       mainAxisSpacing: AppSpacing.md,
       crossAxisSpacing: AppSpacing.md,
       children: [
-        _buildStatCard(
+        DashboardStatCard(
           icon: Icons.calendar_month,
           label: 'Reservas Activas',
           value: '${stats?.activeReservationsCount ?? 0}',
         ),
-        _buildStatCard(
+        DashboardStatCard(
           icon: Icons.favorite,
           label: 'Favoritos',
           value: '${stats?.favoritesCount ?? 0}',
         ),
-        _buildStatCard(
+        DashboardStatCard(
           icon: Icons.message,
           label: 'Mensajes',
           value: '${stats?.messagesCount ?? 0}',
         ),
-        _buildStatCard(
+        DashboardStatCard(
           icon: Icons.landscape,
           label: 'Hectáreas',
           value: '${stats?.hectares ?? 0}',
         ),
       ],
-    );
-  }
-
-  Widget _buildStatCard({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: AppColors.primary, size: 24),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            label,
-            style: AppTextStyles.labelSmall,
-            maxLines: 2,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: AppTextStyles.headlineSmall.copyWith(fontSize: 20),
-          ),
-        ],
-      ),
     );
   }
 

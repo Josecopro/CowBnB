@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/api_models.dart';
-import '../components/notifications_modal.dart';
 import 'api_client.dart';
 
 class CowbnbApi {

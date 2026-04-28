@@ -61,7 +61,7 @@ class StorageService {
 
       for (int i = 0; i < files.length; i++) {
         final file = files[i];
-        final fileName = 'image_$i_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final fileName = 'image_${i}_${DateTime.now().millisecondsSinceEpoch}.jpg';
 
         final ref = _storage.ref().child(
               'terrenos/$terrenoId/$fileName',

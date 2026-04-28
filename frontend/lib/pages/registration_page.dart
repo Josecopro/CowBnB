@@ -23,17 +23,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Top AppBar
             _buildAppBar(),
 
-            // Main Content
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
                 children: [
                   const SizedBox(height: AppSpacing.xl),
 
-                  // Image Section
                   ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadius.xl),
                       child: AppNetworkImage(
@@ -48,7 +45,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                   const SizedBox(height: AppSpacing.xl),
 
-                  // Title
                   Text(
                     'Siembra el futuro de tu inversión.',
                     style: AppTextStyles.headlineLarge.copyWith(
@@ -59,7 +55,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                   const SizedBox(height: AppSpacing.md),
 
-                  // Subtitle
                   Text(
                     'Únete a la red más grande de gestión de tierras agrícolas. Encuentra el terreno perfecto o rentabiliza tus hectáreas con total seguridad.',
                     style: AppTextStyles.body.copyWith(
@@ -69,7 +64,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                   const SizedBox(height: AppSpacing.xl),
 
-                  // Form Card
                   AppCard(
                     padding: AppSpacing.lg,
                     child: Column(
@@ -89,7 +83,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                         const SizedBox(height: AppSpacing.lg),
 
-                        // Role Selection
                         Text(
                           'SELECCIONA TU ROL',
                           style: AppTextStyles.labelSmall,
@@ -100,7 +93,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                         const SizedBox(height: AppSpacing.lg),
 
-                        // Form Fields
                         AppInput(
                           label: 'NOMBRE COMPLETO',
                           hint: 'Ej. Juan Pérez',
@@ -125,7 +117,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                         const SizedBox(height: AppSpacing.lg),
 
-                        // Submit Button
                         SizedBox(
                           width: double.infinity,
                           height: 56,
@@ -164,7 +155,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                         const SizedBox(height: AppSpacing.lg),
 
-                        // Divider
                         Row(
                           children: [
                             Expanded(
@@ -193,7 +183,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                         const SizedBox(height: AppSpacing.md),
 
-                        // Terms
                         Text.rich(
                           TextSpan(
                             text:
@@ -240,7 +229,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                   // Footer
                   Text(
-                    '© 2026 CowBnB SAS. Inovación para el agro',
                     style: AppTextStyles.labelSmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -306,7 +294,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
   Widget _buildRoleSelector() {
     return Column(
       children: [
-        // Owner Option
         GestureDetector(
           onTap: () => setState(() => selectedRole = 'owner'),
           child: Container(
@@ -370,7 +357,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
         const SizedBox(height: AppSpacing.md),
 
-        // Renter Option
         GestureDetector(
           onTap: () => setState(() => selectedRole = 'renter'),
           child: Container(

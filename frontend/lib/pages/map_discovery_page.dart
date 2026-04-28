@@ -37,7 +37,6 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
           return SingleChildScrollView(
             child: Column(
               children: [
-            // Search Bar
             Padding(
               padding: const EdgeInsets.all(AppSpacing.md),
               child: TextField(
@@ -66,12 +65,10 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
               ),
             ),
 
-            // Map Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Stack(
                 children: [
-                  // Map Image
                   ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadius.xl),
                     child: AppNetworkImage(
@@ -84,7 +81,6 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                     ),
                   ),
 
-                  // Price Pins
                   Positioned(
                     top: 100,
                     left: 60,
@@ -107,7 +103,6 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                         : '\$0', highlighted: true),
                   ),
 
-                  // Control Buttons (Top Right)
                   Positioned(
                     top: 16,
                     right: 16,
@@ -121,7 +116,6 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                     ),
                   ),
 
-                  // Filter Button (Bottom Center)
                   Positioned(
                     bottom: 16,
                     left: 0,
@@ -165,7 +159,6 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
 
             const SizedBox(height: AppSpacing.lg),
 
-            // Recommended Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Column(
@@ -206,7 +199,6 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
 
             const SizedBox(height: AppSpacing.md),
 
-            // Recommended Cards Horizontal Scroll
             SizedBox(
               height: 300,
               child: ListView(
@@ -231,7 +223,6 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
 
             const SizedBox(height: AppSpacing.lg),
 
-            // Stats Section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
               child: Row(

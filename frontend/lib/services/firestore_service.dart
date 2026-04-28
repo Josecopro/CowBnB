@@ -7,9 +7,6 @@ final logger = Logger();
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // ============================================================================
-  // TERRENOS COLLECTION OPERATIONS
-  // ============================================================================
 
   /// Create a new terreno
   Future<String> createTerreno(Map<String, dynamic> data) async {
@@ -129,9 +126,6 @@ class FirestoreService {
     }
   }
 
-  // ============================================================================
-  // RESERVAS COLLECTION OPERATIONS
-  // ============================================================================
 
   /// Create a new reserva
   Future<String> createReserva(Map<String, dynamic> data) async {
@@ -184,9 +178,6 @@ class FirestoreService {
         .snapshots() as Stream<QuerySnapshot<Map<String, dynamic>>>;
   }
 
-  // ============================================================================
-  // FAVORITES COLLECTION OPERATIONS
-  // ============================================================================
 
   /// Add a terreno to user's favorites
   Future<void> addToFavorites(String userId, String terrenoId) async {
@@ -235,9 +226,6 @@ class FirestoreService {
         .snapshots() as Stream<QuerySnapshot<Map<String, dynamic>>>;
   }
 
-  // ============================================================================
-  // CONVERSATIONS OPERATIONS
-  // ============================================================================
 
   /// Get user's conversations
   Stream<QuerySnapshot<Map<String, dynamic>>> getConversationsStream(
@@ -295,9 +283,6 @@ class FirestoreService {
         .snapshots() as Stream<QuerySnapshot<Map<String, dynamic>>>;
   }
 
-  // ============================================================================
-  // REVIEWS OPERATIONS
-  // ============================================================================
 
   /// Create a review
   Future<String> createReview(Map<String, dynamic> data) async {
@@ -325,9 +310,6 @@ class FirestoreService {
         .snapshots() as Stream<QuerySnapshot<Map<String, dynamic>>>;
   }
 
-  // ============================================================================
-  // GENERIC OPERATIONS
-  // ============================================================================
 
   /// Get a document from any collection
   Future<Map<String, dynamic>?> getDocument(

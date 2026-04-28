@@ -13,23 +13,19 @@ class OnboardingPage extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Top Navigation
             _buildAppBar(context),
 
-            // Hero Section
             SizedBox(
               height: 500,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  // Hero Image
                   AppNetworkImage(
                     imageUrl:
                         'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop',
                     fit: BoxFit.cover,
                     memCacheWidth: 1280,
                   ),
-                  // Gradient Overlay
                   Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -42,7 +38,6 @@ class OnboardingPage extends StatelessWidget {
                       ),
                     ),
                   ),
-                  // Floating Card
                   Positioned(
                     bottom: 32,
                     left: 24,
@@ -63,7 +58,6 @@ class OnboardingPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Chip
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md,
@@ -91,7 +85,6 @@ class OnboardingPage extends StatelessWidget {
 
                   const SizedBox(height: AppSpacing.lg),
 
-                  // Title
                   Text(
                     'El futuro de la tierra fertil.',
                     style: AppTextStyles.headlineLarge.copyWith(
@@ -101,7 +94,6 @@ class OnboardingPage extends StatelessWidget {
 
                   const SizedBox(height: AppSpacing.md),
 
-                  // Description
                   Text(
                     'Reserva, gestiona y escala tus proyectos agricolas con CowBnB. Descubre terrenos de alto rendimiento seleccionados por agronomos digitales.',
                     style: AppTextStyles.body.copyWith(
@@ -111,7 +103,6 @@ class OnboardingPage extends StatelessWidget {
 
                   const SizedBox(height: AppSpacing.xl),
 
-                  // Features
                   _buildFeatureItem(
                     icon: Icons.search,
                     title: 'Descubrimiento inteligente',
@@ -130,7 +121,6 @@ class OnboardingPage extends StatelessWidget {
 
                   const SizedBox(height: AppSpacing.xl),
 
-                  // CTA Button
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -155,7 +145,6 @@ class OnboardingPage extends StatelessWidget {
 
                   const SizedBox(height: AppSpacing.lg),
 
-                  // Pagination & Skip
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
