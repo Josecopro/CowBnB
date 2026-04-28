@@ -1,0 +1,216 @@
+rules_version = '2';
+
+// ============================================================
+// CowBnB – Firestore Security Rules
+// Principio: ninguna operación crítica desde cliente.
+// Los estados de pago/reserva solo los modifica el backend.
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    function isOwnerOf(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isOwnerRole() {
+      return isAuth() && getUserRole() == 'owner';
+    }
+
+    function isRenterRole() {
+      return isAuth() && getUserRole() == 'renter';
+    }
+
+    // Campos que solo el backend puede escribir
+    function isBackendOnly(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // ── users ─────────────────────────────────────────────────
+    // Solo el dueño puede leer/escribir su propio documento.
+    // role y banderas críticas solo desde backend (Functions con Admin SDK).
+    match /users/{userId} {
+      allow read: if isOwnerOf(userId);
+      allow create: if isOwnerOf(userId)
+                    && request.resource.data.uid == userId
+                    && request.resource.data.keys().hasAll(['fullName', 'email', 'role'])
+                    && request.resource.data.role in ['owner', 'renter'];
+      allow update: if isOwnerOf(userId)
+                    // No permite al cliente cambiar role ni createdAt
+                    && isBackendOnly(['role', 'createdAt']);
+      allow delete: if false;
+    }
+
+    // ── terrenos ──────────────────────────────────────────────
+    match /terrenos/{terrenoId} {
+      // Lectura pública para terrenos disponibles
+      allow read: if resource.data.status == 'disponible'
+                  || (isAuth() && (
+                       resource.data.ownerId == request.auth.uid
+                       || resource.data.status in ['reservado', 'en_espera']
+                     ));
+
+      // Solo owners pueden crear
+      allow create: if isOwnerRole()
+                    && request.resource.data.ownerId == request.auth.uid
+                    && request.resource.data.status == 'disponible'
+                    && request.resource.data.keys().hasAll(['title', 'description', 'sizeHectares', 'priceMonthly', 'location', 'ownerId']);
+
+      // Solo el owner del terreno puede editar campos no críticos
+      allow update: if isAuth()
+                    && resource.data.ownerId == request.auth.uid
+                    // Backend es el único que puede cambiar a estados críticos
+                    && isBackendOnly(['status', 'ratingAvg', 'ratingCount', 'ndviScore', 'statusHistory']);
+
+      allow delete: if false; // Soft delete vía status=inactivo
+    }
+
+    // ── reservas ──────────────────────────────────────────────
+    match /reservas/{reservaId} {
+      // Solo el owner o renter de la reserva pueden leer
+      allow read: if isAuth()
+                  && (resource.data.renterId == request.auth.uid
+                      || resource.data.ownerId == request.auth.uid);
+
+      // Solo renters autenticados pueden crear reservas
+      allow create: if isRenterRole()
+                    && request.resource.data.renterId == request.auth.uid
+                    && request.resource.data.status == 'en_espera'
+                    && request.resource.data.paymentStatus == 'pendiente';
+
+      // Actualizaciones de estado solo desde backend
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ── payment_events ────────────────────────────────────────
+    // Solo lectura para las partes de la reserva, escritura solo backend
+    match /payment_events/{eventId} {
+      allow read: if isAuth()
+                  && (resource.data.reservaId != null)
+                  && (
+                    get(/databases/$(database)/documents/reservas/$(resource.data.reservaId)).data.renterId == request.auth.uid
+                    || get(/databases/$(database)/documents/reservas/$(resource.data.reservaId)).data.ownerId == request.auth.uid
+                  );
+      allow write: if false;
+    }
+
+    // ── conversaciones ────────────────────────────────────────
+    match /conversaciones/{conversationId} {
+      allow read: if isAuth()
+                  && (resource.data.ownerId == request.auth.uid
+                      || resource.data.renterId == request.auth.uid);
+
+      // Solo backend puede crear conversaciones (se crean al confirmar reserva)
+      allow create: if false;
+
+      // Owner/renter pueden actualizar lastRead y unread counters
+      allow update: if isAuth()
+                    && (resource.data.ownerId == request.auth.uid
+                        || resource.data.renterId == request.auth.uid)
+                    && isBackendOnly(['reservaId', 'terrenoId', 'ownerId', 'renterId', 'createdAt']);
+
+      allow delete: if false;
+
+      // ── mensajes (sub-colección) ──────────────────────────────
+      match /mensajes/{messageId} {
+        allow read: if isAuth()
+                    && (get(/databases/$(database)/documents/conversaciones/$(conversationId)).data.ownerId == request.auth.uid
+                        || get(/databases/$(database)/documents/conversaciones/$(conversationId)).data.renterId == request.auth.uid);
+
+        allow create: if isAuth()
+                      && request.resource.data.senderId == request.auth.uid
+                      && (get(/databases/$(database)/documents/conversaciones/$(conversationId)).data.ownerId == request.auth.uid
+                          || get(/databases/$(database)/documents/conversaciones/$(conversationId)).data.renterId == request.auth.uid)
+                      && request.resource.data.keys().hasAll(['text', 'senderId', 'sentAt']);
+
+        allow update: if false;
+        allow delete: if false;
+      }
+    }
+
+    // ── reviews ───────────────────────────────────────────────
+    match /reviews/{reviewId} {
+      // Lectura pública de reviews (información del terreno)
+      allow read: if true;
+
+      // Solo renters con reserva finalizada pueden crear
+      // (validación completa en Cloud Function, aquí mínimos guards)
+      allow create: if isRenterRole()
+                    && request.resource.data.reviewerId == request.auth.uid
+                    && request.resource.data.score >= 1
+                    && request.resource.data.score <= 5;
+
+      // Solo el autor dentro de ventana de edición
+      allow update: if isAuth()
+                    && resource.data.reviewerId == request.auth.uid
+                    && isBackendOnly(['terrenoId', 'ownerId', 'reservaId', 'reviewerId', 'createdAt']);
+
+      allow delete: if false;
+    }
+
+    // ── recommendations ───────────────────────────────────────
+    match /recommendations/{docId} {
+      allow read: if isAuth() && resource.data.userId == request.auth.uid;
+      allow write: if false; // Solo backend
+    }
+
+    // ── behavior_signals ──────────────────────────────────────
+    match /behavior_signals/{docId} {
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if false;
+    }
+
+    // ── ndvi_checks ───────────────────────────────────────────
+    // Solo backend puede escribir/leer (excepto owners de terreno)
+    match /ndvi_checks/{checkId} {
+      allow read: if isAuth()
+                  && get(/databases/$(database)/documents/terrenos/$(resource.data.terrenoId)).data.ownerId == request.auth.uid;
+      allow write: if false;
+    }
+
+    // ── action_tokens ─────────────────────────────────────────
+    // Nunca exponer desde cliente
+    match /action_tokens/{tokenId} {
+      allow read, write: if false;
+    }
+
+    // ── idempotency_keys ──────────────────────────────────────
+    match /idempotency_keys/{keyId} {
+      allow read, write: if false;
+    }
+
+    // ── state_transitions (auditoría) ─────────────────────────
+    match /state_transitions/{docId} {
+      allow read: if false; // Solo acceso desde consola/backend
+      allow write: if false;
+    }
+
+    // ── pending_notifications / pending_emails ─────────────────
+    match /pending_notifications/{docId} {
+      allow read, write: if false;
+    }
+    match /pending_emails/{docId} {
+      allow read, write: if false;
+    }
+
+    // ── webhook_errors ────────────────────────────────────────
+    match /webhook_errors/{docId} {
+      allow read, write: if false;
+    }
+
+    // ── ndvi_job_runs ─────────────────────────────────────────
+    match /ndvi_job_runs/{docId} {
+      allow read, write: if false;
+    }
+  }
+}

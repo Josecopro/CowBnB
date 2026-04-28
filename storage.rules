@@ -1,0 +1,31 @@
+rules_version = '2';
+
+// ============================================================
+// CowBnB – Firebase Storage Rules
+// Las imágenes de terrenos se suben con signed URL desde backend.
+// El cliente no puede escribir directamente a Storage.
+// ============================================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Imágenes de terrenos: lectura pública, escritura solo backend (vía Admin SDK)
+    match /terrenos/{terrenoId}/images/{imageFile} {
+      allow read: if true;
+      // Escritura: solo signed URLs generados por Cloud Functions (Admin SDK)
+      // Los clientes usan el signed URL y no tienen acceso directo.
+      allow write: if false;
+    }
+
+    // Documentos privados (contratos, etc.)
+    match /private/{userId}/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false; // Solo backend
+    }
+
+    // Bloquear todo lo demás
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
