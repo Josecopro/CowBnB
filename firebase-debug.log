@@ -155,3 +155,49 @@ Issues? Report them at https://github.com/firebase/firebase-tools/issues and att
 [debug] [2026-04-28T19:09:34.435Z] [work-queue] {"queuedWork":["/cowbnb-ccd0d/us-central1/api/terrenos-2026-04-28T19:09:34.435Z"],"queueLength":1,"runningWork":[],"workRunningCount":0}
 [debug] [2026-04-28T19:09:34.435Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":["/cowbnb-ccd0d/us-central1/api/terrenos-2026-04-28T19:09:34.435Z"],"workRunningCount":1}
 [debug] [2026-04-28T19:09:34.436Z] [work-queue] {"queuedWork":[],"queueLength":0,"runningWork":[],"workRunningCount":0}
+[debug] [2026-04-28T19:38:37.428Z] File /home/sanma613/Desktop/CowBnB/backend/functions/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/sanma613/Desktop/CowBnB/backend/functions/index.ts changed, reloading triggers"}}
+[debug] [2026-04-28T19:38:37.429Z] File /home/sanma613/Desktop/CowBnB/backend/functions/terrenos/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/sanma613/Desktop/CowBnB/backend/functions/terrenos/index.ts changed, reloading triggers"}}
+[debug] [2026-04-28T19:38:37.429Z] File /home/sanma613/Desktop/CowBnB/backend/functions/reservas/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/sanma613/Desktop/CowBnB/backend/functions/reservas/index.ts changed, reloading triggers"}}
+[debug] [2026-04-28T19:38:37.429Z] File /home/sanma613/Desktop/CowBnB/backend/functions/dashboard/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/sanma613/Desktop/CowBnB/backend/functions/dashboard/index.ts changed, reloading triggers"}}
+[debug] [2026-04-28T19:38:37.430Z] File /home/sanma613/Desktop/CowBnB/backend/functions/favorites/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/sanma613/Desktop/CowBnB/backend/functions/favorites/index.ts changed, reloading triggers"}}
+[debug] [2026-04-28T19:38:37.430Z] File /home/sanma613/Desktop/CowBnB/backend/functions/conversations/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/sanma613/Desktop/CowBnB/backend/functions/conversations/index.ts changed, reloading triggers"}}
+[debug] [2026-04-28T19:38:37.433Z] File /home/sanma613/Desktop/CowBnB/backend/functions/notifications/index.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/sanma613/Desktop/CowBnB/backend/functions/notifications/index.ts changed, reloading triggers"}}
+[debug] [2026-04-28T19:38:37.469Z] File /home/sanma613/Desktop/CowBnB/backend/functions/package.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/sanma613/Desktop/CowBnB/backend/functions/package.json changed, reloading triggers"}}
+[debug] [2026-04-28T19:38:37.469Z] File /home/sanma613/Desktop/CowBnB/backend/functions/tsconfig.json changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/sanma613/Desktop/CowBnB/backend/functions/tsconfig.json changed, reloading triggers"}}
+[debug] [2026-04-28T19:38:38.471Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-04-28T19:38:39.300Z] > [functions] package.json contents: {
+  "name": "cowbnb-functions",
+  "private": true,
+  "main": "lib/index.js",
+  "engines": {
+    "node": "18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "serve": "npm run build && npx -y firebase-tools@latest emulators:start --only functions",
+    "shell": "npm run build && npx -y firebase-tools@latest functions:shell",
+    "start": "npm run shell",
+    "deploy": "npx -y firebase-tools@latest deploy --only functions",
+    "logs": "npx -y firebase-tools@latest functions:log"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.5.0",
+    "firebase-functions": "^5.1.0",
+    "helmet": "^7.1.0",
+    "winston": "^3.13.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.12"
+  }
+}
+[error] ⬢  functions: Failed to load function definition from source: FirebaseError: There was an error reading backend/functions/package.json:
+
+ backend/functions/lib/index.js does not exist, can't deploy Cloud Functions {"metadata":{"emulator":{"name":"functions"},"message":"Failed to load function definition from source: FirebaseError: There was an error reading backend/functions/package.json:\n\n backend/functions/lib/index.js does not exist, can't deploy Cloud Functions"}}
