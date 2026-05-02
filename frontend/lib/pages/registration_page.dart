@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
 import '../components/app_components.dart';
 import '../components/optimized_network_image.dart';
+import '../services/auth_service.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({Key? key}) : super(key: key);
@@ -15,6 +16,22 @@ class _RegistrationPageState extends State<RegistrationPage> {
   String selectedRole = 'owner';
   String selectedPhonePrefix = '+57';
   final List<String> phonePrefixes = ['+56', '+54', '+57', '+52', '+34', '+1', '+44'];
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final AuthService authService = AuthService();
+  bool isSubmitting = false;
+  String? errorMessage;
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    phoneController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,6 +121,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         AppInput(
                           label: 'NOMBRE COMPLETO',
                           hint: 'Ej. Juan Pérez',
+                          controller: nameController,
                         ),
                         const SizedBox(height: AppSpacing.md),
 
@@ -111,6 +129,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           label: 'CORREO ELECTRÓNICO',
                           hint: 'juan@agro.com',
                           keyboardType: TextInputType.emailAddress,
+                          controller: emailController,
                         ),
                         const SizedBox(height: AppSpacing.md),
 
@@ -118,10 +137,21 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           label: 'CONTRASEÑA',
                           hint: '••••••••',
                           obscureText: true,
+                          controller: passwordController,
                         ),
                         const SizedBox(height: AppSpacing.md),
 
                         _buildPhoneInput(),
+
+                        if (errorMessage != null) ...[
+                          const SizedBox(height: AppSpacing.md),
+                          Text(
+                            errorMessage!,
+                            style: AppTextStyles.bodySmall.copyWith(
+                              color: AppColors.error,
+                            ),
+                          ),
+                        ],
 
                         const SizedBox(height: AppSpacing.lg),
 
@@ -130,13 +160,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           width: double.infinity,
                           height: 56,
                           child: ElevatedButton(
-                            onPressed: () {
-                              if (selectedRole == 'owner') {
-                                context.go('/owner');
-                              } else {
-                                context.go('/renter');
-                              }
-                            },
+                            onPressed: isSubmitting ? null : _handleSubmit,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               shape: RoundedRectangleBorder(
@@ -148,15 +172,16 @@ class _RegistrationPageState extends State<RegistrationPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Comenzar Registro',
+                                  isSubmitting ? 'Registrando...' : 'Comenzar Registro',
                                   style: AppTextStyles.label.copyWith(
                                     color: Colors.white,
                                     fontSize: 16,
                                   ),
                                 ),
                                 const SizedBox(width: AppSpacing.sm),
-                                const Icon(Icons.arrow_forward,
-                                    color: Colors.white),
+                                if (!isSubmitting)
+                                  const Icon(Icons.arrow_forward,
+                                      color: Colors.white),
                               ],
                             ),
                           ),
@@ -301,6 +326,55 @@ class _RegistrationPageState extends State<RegistrationPage> {
         ],
       ),
     );
+  }
+
+  Future<void> _handleSubmit() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final displayName = nameController.text.trim();
+    final phone = phoneController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() {
+        errorMessage = 'Completa correo y contraseña.';
+      });
+      return;
+    }
+
+    setState(() {
+      isSubmitting = true;
+      errorMessage = null;
+    });
+
+    try {
+      await authService.registerWithEmail(
+        email: email,
+        password: password,
+      );
+
+      await authService.upsertProfile(
+        role: selectedRole,
+        displayName: displayName.isEmpty ? null : displayName,
+        phoneNumber: phone.isEmpty ? null : "$selectedPhonePrefix$phone",
+      );
+
+      if (!mounted) return;
+      if (selectedRole == 'owner') {
+        context.go('/owner');
+      } else {
+        context.go('/renter');
+      }
+    } catch (error) {
+      if (!mounted) return;
+      setState(() {
+        errorMessage = 'No se pudo registrar. Verifica tus datos.';
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        isSubmitting = false;
+      });
+    }
   }
 
   Widget _buildRoleSelector() {
@@ -517,6 +591,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   filled: true,
                   fillColor: AppColors.surfaceContainerLowest,
                 ),
+                controller: phoneController,
               ),
             ),
           ],
