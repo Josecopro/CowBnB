@@ -195,7 +195,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
 
             // Recommended Cards Horizontal Scroll
             SizedBox(
-              height: 300,
+              height: 330,
               child: ListView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
@@ -264,12 +264,8 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
       elevation: 0,
       title: Row(
         children: [
-          const AppAvatar(
-            radius: 16,
-            imageUrl:
-                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
-          ),
-          const SizedBox(width: AppSpacing.md),
+          const Icon(Icons.eco, color: AppColors.primary, size: 28),
+          const SizedBox(width: AppSpacing.sm),
           Text(
             'CowBnB',
             style: AppTextStyles.headline.copyWith(

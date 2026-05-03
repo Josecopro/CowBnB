@@ -1,0 +1,56 @@
+--- lib/pages/create_listing_page.dart
++++ lib/pages/create_listing_page.dart
+@@ -1,7 +1,13 @@
+ import 'package:flutter/material.dart';
+ import 'package:go_router/go_router.dart';
++import 'package:image_picker/image_picker.dart';
++import 'dart:convert';
++import 'package:provider/provider.dart';
+ import '../design_tokens.dart';
+ import '../components/app_components.dart';
++import '../services/listing_service.dart';
++import '../services/api_client.dart';
++import '../main.dart'; // assuming api client is available or we instantiate it
+ 
+ class CreateListingPage extends StatefulWidget {
+   const CreateListingPage({Key? key}) : super(key: key);
+@@ -10,6 +16,8 @@
+   State<CreateListingPage> createState() => _CreateListingPageState();
+ }
+ 
+ class _CreateListingPageState extends State<CreateListingPage> {
+   int currentStep = 0;
++  bool _isLoading = false;
++  final ImagePicker _picker = ImagePicker();
++  List<XFile> _images = <XFile>[];
+   late TextEditingController titleController;
+   late TextEditingController descriptionController;
+@@ -51,6 +59,38 @@
+     sizeController.dispose();
+     super.dispose();
+   }
++
++  Future<void> _pickImages() async {
++    try {
++      final List<XFile> picked = await _picker.pickMultiImage();
++      if (picked.isNotEmpty) {
++        setState(() {
++          _images.addAll(picked);
++          if (_images.length > 10) {
++            _images = _images.sublist(0, 10);
++          }
++        });
++      }
++    } catch (e) {
++      debugPrint("Error picking images: \$e");
++    }
++  }
++
++  void _removeImage(int index) {
++    setState(() {
++      _images.removeAt(index);
++    });
++  }
+ 
+   @override
+   Widget build(BuildContext context) {

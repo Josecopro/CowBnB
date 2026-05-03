@@ -5,6 +5,7 @@ import '../components/app_components.dart';
 import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
+import '../services/auth_service.dart';
 
 class DashboardRenterPage extends StatefulWidget {
   const DashboardRenterPage({Key? key}) : super(key: key);
@@ -29,6 +30,24 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
       isRead: true,
     ),
   ];
+  final AuthService authService = AuthService();
+  UserProfile? profile;
+  bool isLoadingProfile = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final loadedProfile = await authService.getProfile();
+    if (!mounted) return;
+    setState(() {
+      profile = loadedProfile;
+      isLoadingProfile = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +75,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Hola, Alejandro',
+                        'Hola, ${_displayName()}',
                         style: AppTextStyles.headlineSmall.copyWith(
                           fontSize: 32,
                         ),
@@ -147,13 +166,27 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: const AppAvatar(
-            radius: 16,
-            imageUrl:
-                'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1000&auto=format&fit=crop',
-          ),
+          child: _buildProfileAvatar(),
         ),
       ],
+    );
+  }
+
+  String _displayName() {
+    if (isLoadingProfile) return '...';
+    final name = profile?.displayName?.trim();
+    return name == null || name.isEmpty ? 'Usuario' : name;
+  }
+
+  Widget _buildProfileAvatar() {
+    return CircleAvatar(
+      radius: 16,
+      backgroundColor: AppColors.surfaceContainer,
+      child: Icon(
+        Icons.person,
+        color: AppColors.textSecondary,
+        size: 18,
+      ),
     );
   }
 
