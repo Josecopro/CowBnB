@@ -389,3 +389,41 @@ INFO: channel closed
 [debug] [2026-05-03T15:06:35.102Z] [worker-us-central1-api-0027160c-41fb-426a-9b74-103f93954794]: FINISHING {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-0027160c-41fb-426a-9b74-103f93954794]: FINISHING"}}
 [debug] [2026-05-03T15:06:35.112Z] [worker-us-central1-api-0027160c-41fb-426a-9b74-103f93954794]: exited {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-0027160c-41fb-426a-9b74-103f93954794]: exited"}}
 [debug] [2026-05-03T15:06:35.113Z] [worker-us-central1-api-0027160c-41fb-426a-9b74-103f93954794]: FINISHED {"metadata":{"emulator":{"name":"functions"},"function":{"name":"us-central1-api"},"extension":{},"message":"[worker-us-central1-api-0027160c-41fb-426a-9b74-103f93954794]: FINISHED"}}
+[debug] [2026-05-03T15:06:49.836Z] File /home/sanma613/UProjects/CowBnB/functions/src/modules/listing_module/listing_repository.ts changed, reloading triggers {"metadata":{"emulator":{"name":"functions"},"message":"File /home/sanma613/UProjects/CowBnB/functions/src/modules/listing_module/listing_repository.ts changed, reloading triggers"}}
+[debug] [2026-05-03T15:06:50.838Z] Validating nodejs source
+[debug] [2026-05-03T15:06:51.610Z] > [functions] package.json contents: {
+  "name": "cowbnb-functions",
+  "private": true,
+  "main": "lib/index.js",
+  "engines": {
+    "node": "20"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc -w",
+    "serve": "npx -y firebase-tools@latest emulators:start --only functions",
+    "deploy": "npx -y firebase-tools@latest deploy --only functions"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^7.19.0",
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^7.2.5",
+    "hono": "^4.4.8",
+    "uuid": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.10",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.5.4"
+  }
+}
+[debug] [2026-05-03T15:06:51.610Z] Building nodejs source
+[debug] [2026-05-03T15:06:51.610Z] Failed to find version of module node: reached end of search path /home/sanma613/UProjects/CowBnB/functions/node_modules
+[info] ✔  functions: Using node@20 from host. 
+[info] i  functions: Loaded environment variables from .env. 
+[debug] [2026-05-03T15:06:51.613Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-05-03T15:06:51.615Z] Found firebase-functions binary at '/home/sanma613/UProjects/CowBnB/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8583
+
+[debug] [2026-05-03T15:06:52.048Z] Got response from /__/functions.yaml {"endpoints":{"api":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"httpsTrigger":{},"entryPoint":"api"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] ✔  functions: Loaded functions definitions from source: api. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: api."}}

@@ -9,6 +9,16 @@ export class ListingRepository {
     return docRef.id;
   }
 
+  async getListingsByOwner(ownerId: string): Promise<(ListingData & { id: string })[]> {
+    const snapshot = await db.collection("listings").where("ownerId", "==", ownerId).orderBy("createdAt", "desc").get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as ListingData) }));
+  }
+
+  async getAllListings(): Promise<(ListingData & { id: string })[]> {
+    const snapshot = await db.collection("listings").orderBy("createdAt", "desc").get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as ListingData) }));
+  }
+
   async uploadImageBase64(base64Str: string, ext: string): Promise<string> {
     // Assuming base64Str does NOT contain "data:image/jpeg;base64," prefix.
     const fileBuffer = Buffer.from(base64Str, "base64");
