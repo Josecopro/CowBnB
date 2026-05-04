@@ -36,4 +36,27 @@ listing_routes.post("/", async (c) => {
   }
 });
 
+listing_routes.get("/", async (c) => {
+  try {
+    const listings = await service.getAllListings();
+    return c.json({ data: listings, success: true }, 200);
+  } catch (error) {
+    console.error("Error retrieving listings", error);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
+listing_routes.get("/me", async (c) => {
+  try {
+    const uid = c.get("user_uid");
+    if (!uid) return c.json({ error: "Unauthorized" }, 401);
+
+    const listings = await service.getListingsByOwner(uid);
+    return c.json({ data: listings, success: true }, 200);
+  } catch (error) {
+    console.error("Error retrieving user listings", error);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
 export { listing_routes };

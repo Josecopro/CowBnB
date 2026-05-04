@@ -138,7 +138,8 @@ class _MessagesPageState extends State<MessagesPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(item.name, style: AppTextStyles.label),
                                   Text(
@@ -169,18 +170,21 @@ class _MessagesPageState extends State<MessagesPage> {
                                   ),
                                   if (item.unreadCount > 0)
                                     Container(
-                                      margin: const EdgeInsets.only(left: AppSpacing.sm),
+                                      margin: const EdgeInsets.only(
+                                          left: AppSpacing.sm),
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 8,
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
                                         color: AppColors.primary,
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius:
+                                            BorderRadius.circular(999),
                                       ),
                                       child: Text(
                                         '${item.unreadCount}',
-                                        style: AppTextStyles.labelSmall.copyWith(
+                                        style:
+                                            AppTextStyles.labelSmall.copyWith(
                                           color: Colors.white,
                                         ),
                                       ),
@@ -195,7 +199,8 @@ class _MessagesPageState extends State<MessagesPage> {
                   ),
                 );
               },
-              separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.sm),
+              separatorBuilder: (context, index) =>
+                  const SizedBox(height: AppSpacing.sm),
               itemCount: conversations.length,
             ),
           ),

@@ -42,7 +42,8 @@ class ListingDetailsPage extends StatelessWidget {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(AppRadius.md),
                       ),
-                      child: const Icon(Icons.arrow_back, color: AppColors.primary),
+                      child: const Icon(Icons.arrow_back,
+                          color: AppColors.primary),
                     ),
                   ),
                 ),
@@ -55,7 +56,8 @@ class ListingDetailsPage extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
-                    child: const Icon(Icons.favorite_border, color: AppColors.primary),
+                    child: const Icon(Icons.favorite_border,
+                        color: AppColors.primary),
                   ),
                 ),
               ],
@@ -75,7 +77,8 @@ class ListingDetailsPage extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.location_on, size: 16, color: AppColors.textSecondary),
+                          const Icon(Icons.location_on,
+                              size: 16, color: AppColors.textSecondary),
                           const SizedBox(width: 4),
                           Text(
                             'Cordoba, Argentina',
@@ -142,7 +145,8 @@ class ListingDetailsPage extends StatelessWidget {
                   const SizedBox(height: AppSpacing.md),
                   Text(
                     'Este terreno ofrece 12 hectareas de tierra fertil con sistemas de riego modernos. Ideal para cultivos intensivos y ganaderia sostenible.',
-                    style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                    style: AppTextStyles.body
+                        .copyWith(color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   Text(
@@ -168,7 +172,8 @@ class ListingDetailsPage extends StatelessWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Precio por mes', style: AppTextStyles.labelSmall),
+                            Text('Precio por mes',
+                                style: AppTextStyles.labelSmall),
                             const SizedBox(height: 4),
                             Text(
                               '\$1,200',
@@ -187,12 +192,14 @@ class ListingDetailsPage extends StatelessWidget {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(AppRadius.lg),
+                                borderRadius:
+                                    BorderRadius.circular(AppRadius.lg),
                               ),
                             ),
                             child: Text(
                               'Reservar',
-                              style: AppTextStyles.label.copyWith(color: Colors.white),
+                              style: AppTextStyles.label
+                                  .copyWith(color: Colors.white),
                             ),
                           ),
                         ),

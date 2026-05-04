@@ -5,6 +5,7 @@ import '../components/app_components.dart';
 import '../components/notifications_modal.dart';
 import '../components/optimized_network_image.dart';
 import '../services/auth_service.dart';
+import '../services/listing_service.dart';
 
 class DashboardOwnerPage extends StatefulWidget {
   const DashboardOwnerPage({Key? key}) : super(key: key);
@@ -33,10 +34,30 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
   UserProfile? profile;
   bool isLoadingProfile = true;
 
+  bool isLoadingListings = true;
+  List<dynamic> myListings = [];
+
   @override
   void initState() {
     super.initState();
     _loadProfile();
+    _loadListings();
+  }
+
+  Future<void> _loadListings() async {
+    try {
+      final listings = await ListingService().getMyListings();
+      if (!mounted) return;
+      setState(() {
+        myListings = listings;
+        isLoadingListings = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        isLoadingListings = false;
+      });
+    }
   }
 
   Future<void> _loadProfile() async {
@@ -177,7 +198,9 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                   _buildStatCard(
                     icon: Icons.home,
                     label: 'Propiedades',
-                    value: '03',
+                    value: isLoadingListings
+                        ? '...'
+                        : myListings.length.toString().padLeft(2, '0'),
                   ),
                   _buildStatCard(
                     icon: Icons.check_circle,
@@ -221,25 +244,52 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
 
               const SizedBox(height: AppSpacing.md),
 
-              _buildPropertyCard(
-                title: 'Rancho del Sur',
-                location: 'Mendoza, Argentina • 18 Hectáreas',
-                image:
-                    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop',
-                status: 'Activo',
-                earnings: '\$2,400/mes',
-              ),
+              if (isLoadingListings)
+                const Center(
+                    child: Padding(
+                  padding: EdgeInsets.all(AppSpacing.lg),
+                  child: CircularProgressIndicator(),
+                ))
+              else if (myListings.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(AppSpacing.md),
+                  child: Text('Aún no tienes propiedades publicadas.'),
+                )
+              else
+                ...myListings.map((listing) {
+                  final title = listing['title']?.toString() ?? 'Sin título';
 
-              const SizedBox(height: AppSpacing.md),
+                  String locStr = 'Ubicación desconocida';
+                  if (listing['location'] is Map) {
+                    final city = listing['location']['city'];
+                    final country = listing['location']['country'];
+                    if (city != null && country != null)
+                      locStr = '$city, $country';
+                  } else if (listing['location'] != null) {
+                    locStr = listing['location'].toString();
+                  }
 
-              _buildPropertyCard(
-                title: 'Tierra Verde',
-                location: 'Córdoba, Argentina • 12 Hectáreas',
-                image:
-                    'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1000&auto=format&fit=crop',
-                status: 'Activo',
-                earnings: '\$1,800/mes',
-              ),
+                  final size = listing['size']?.toString() ?? '0';
+                  final locationAndSize = '$locStr • $size Hectáreas';
+
+                  final images = listing['images'] as List<dynamic>?;
+                  final image = (images != null && images.isNotEmpty)
+                      ? images.first.toString()
+                      : 'https://placehold.co/1000x800?text=No+Image';
+
+                  final priceVal = listing['price']?.toString() ?? '0';
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: _buildPropertyCard(
+                      title: title,
+                      location: locationAndSize,
+                      image: image,
+                      status: 'Activo',
+                      earnings: '\$$priceVal/mes',
+                    ),
+                  );
+                }),
 
               const SizedBox(height: 100),
             ],

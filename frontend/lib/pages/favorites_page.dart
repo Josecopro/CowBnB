@@ -121,7 +121,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.favorite, color: AppColors.error),
+                        icon:
+                            const Icon(Icons.favorite, color: AppColors.error),
                         onPressed: () {
                           setState(() {
                             favorites.removeAt(index);
@@ -136,7 +137,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
           ),
         );
       },
-      separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.md),
+      separatorBuilder: (context, index) =>
+          const SizedBox(height: AppSpacing.md),
       itemCount: favorites.length,
     );
   }
@@ -148,7 +150,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.favorite_border, size: 56, color: AppColors.textSecondary),
+            const Icon(Icons.favorite_border,
+                size: 56, color: AppColors.textSecondary),
             const SizedBox(height: AppSpacing.md),
             Text(
               'No tienes favoritos guardados',
@@ -158,7 +161,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Explora terrenos y toca el corazon para guardarlos aqui.',
-              style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+              style: AppTextStyles.bodySmall
+                  .copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.lg),
@@ -172,7 +176,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
       ),
     );
   }
-
 }
 
 class _FavoriteListing {

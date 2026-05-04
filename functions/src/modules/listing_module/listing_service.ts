@@ -29,4 +29,12 @@ export class ListingService {
 
     return this.repository.createListing(listing);
   }
+
+  async getAllListings() {
+    return this.repository.getAllListings();
+  }
+
+  async getListingsByOwner(uid: string) {
+    return this.repository.getListingsByOwner(uid);
+  }
 }

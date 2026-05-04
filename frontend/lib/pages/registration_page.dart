@@ -18,7 +18,15 @@ class RegistrationPage extends StatefulWidget {
 class _RegistrationPageState extends State<RegistrationPage> {
   late String selectedRole;
   String selectedPhonePrefix = '+57';
-  final List<String> phonePrefixes = ['+56', '+54', '+57', '+52', '+34', '+1', '+44'];
+  final List<String> phonePrefixes = [
+    '+56',
+    '+54',
+    '+57',
+    '+52',
+    '+34',
+    '+1',
+    '+44'
+  ];
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -62,13 +70,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   // Image Section
                   ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadius.xl),
-                      child: AppNetworkImage(
-                        imageUrl:
-                            'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop',
+                    child: AppNetworkImage(
+                      imageUrl:
+                          'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=2832&auto=format&fit=crop',
                       height: 300,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                        memCacheWidth: 1200,
+                      memCacheWidth: 1200,
                     ),
                   ),
 
@@ -180,7 +188,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  isSubmitting ? 'Registrando...' : 'Comenzar Registro',
+                                  isSubmitting
+                                      ? 'Registrando...'
+                                      : 'Comenzar Registro',
                                   style: AppTextStyles.label.copyWith(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -229,8 +239,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         // Terms
                         Text.rich(
                           TextSpan(
-                            text:
-                                'Al registrarte, aceptas nuestros ',
+                            text: 'Al registrarte, aceptas nuestros ',
                             style: AppTextStyles.bodySmall.copyWith(
                               color: AppColors.textSecondary,
                             ),
@@ -346,7 +355,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
       setState(() {
         errorMessage = 'Completa correo y contraseña.';
       });
-      print('[RegistrationPage] [${DateTime.now().toIso8601String()}] Validation failed: empty email or password');
+      print(
+          '[RegistrationPage] [${DateTime.now().toIso8601String()}] Validation failed: empty email or password');
       return;
     }
 
@@ -354,7 +364,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
       isSubmitting = true;
       errorMessage = null;
     });
-    print('[RegistrationPage] [${DateTime.now().toIso8601String()}] Registration attempt for email=$email role=$selectedRole');
+    print(
+        '[RegistrationPage] [${DateTime.now().toIso8601String()}] Registration attempt for email=$email role=$selectedRole');
 
     try {
       await authService.registerWithEmail(
@@ -368,7 +379,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
         phoneNumber: phone.isEmpty ? null : "$selectedPhonePrefix$phone",
       );
 
-      print('[RegistrationPage] [${DateTime.now().toIso8601String()}] Registration flow completed for email=$email role=$selectedRole');
+      print(
+          '[RegistrationPage] [${DateTime.now().toIso8601String()}] Registration flow completed for email=$email role=$selectedRole');
 
       if (!mounted) return;
       if (selectedRole == 'owner') {
@@ -446,8 +458,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       color: AppColors.primary,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.check,
-                        color: Colors.white, size: 12),
+                    child:
+                        const Icon(Icons.check, color: Colors.white, size: 12),
                   ),
               ],
             ),
@@ -482,7 +494,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     color: AppColors.surfaceContainerLowest,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
-                  child: const Icon(Icons.agriculture, color: AppColors.primary),
+                  child:
+                      const Icon(Icons.agriculture, color: AppColors.primary),
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -510,8 +523,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       color: AppColors.primary,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.check,
-                        color: Colors.white, size: 12),
+                    child:
+                        const Icon(Icons.check, color: Colors.white, size: 12),
                   ),
               ],
             ),

@@ -6,6 +6,7 @@ import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
 import '../services/auth_service.dart';
+import '../services/listing_service.dart';
 
 class DashboardRenterPage extends StatefulWidget {
   const DashboardRenterPage({Key? key}) : super(key: key);
@@ -33,11 +34,25 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
   final AuthService authService = AuthService();
   UserProfile? profile;
   bool isLoadingProfile = true;
+  List<dynamic> allListings = [];
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
+    _loadListings();
+  }
+
+  Future<void> _loadListings() async {
+    try {
+      final listings = await ListingService().getAllListings();
+      if (!mounted) return;
+      setState(() {
+        allListings = listings;
+      });
+    } catch (e) {
+      debugPrint('Error loading listings: $e');
+    }
   }
 
   Future<void> _loadProfile() async {
@@ -207,7 +222,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
         _buildStatCard(
           icon: Icons.favorite,
           label: 'Favoritos',
-          value: '12',
+          value: allListings.length.toString(),
         ),
         _buildStatCard(
           icon: Icons.message,
@@ -279,25 +294,45 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        _buildBookingCard(
-          title: 'Valle de los Girasoles',
-          location: 'Córdoba, Argentina • 12 Hectáreas',
-          image:
-              'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop',
-          status: 'Confirmado',
-          dates: '15 Oct - 20 Dic',
-          price: '\$1,200/mes',
-        ),
-        const SizedBox(height: AppSpacing.md),
-        _buildBookingCard(
-          title: 'Laderas del Sur',
-          location: 'Mendoza, Argentina • 8 Hectáreas',
-          image:
-              'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1000&auto=format&fit=crop',
-          status: 'Pendiente',
-          dates: '01 Nov - 15 Ene',
-          price: '\$850/mes',
-        ),
+        if (allListings.isEmpty)
+          const Padding(
+            padding: EdgeInsets.all(AppSpacing.md),
+            child: Text('No hay reservas disponibles',
+                style: TextStyle(color: AppColors.textSecondary)),
+          )
+        else
+          ...allListings.take(2).map((listing) {
+            String location = 'Ubicación no especificada';
+            if (listing['location'] is Map) {
+              final city = listing['location']['city'];
+              final country = listing['location']['country'];
+              if (city != null && country != null) {
+                location = "$city, $country";
+              }
+            } else if (listing['location'] != null) {
+              location = listing['location'].toString();
+            }
+
+            final images = listing['images'] as List<dynamic>?;
+            final imageUrl = (images != null && images.isNotEmpty)
+                ? images.first.toString()
+                : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
+
+            return Column(
+              children: [
+                _buildBookingCard(
+                  title: listing['title']?.toString() ?? 'Sin título',
+                  location:
+                      "$location • ${listing['totalArea'] ?? '0'} Hectáreas",
+                  image: imageUrl,
+                  status: 'Confirmado',
+                  dates: '15 Oct - 20 Dic',
+                  price: '\$${listing['price'] ?? 0}/mes',
+                ),
+                const SizedBox(height: AppSpacing.md),
+              ],
+            );
+          }),
       ],
     );
   }
@@ -470,5 +505,4 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
       ],
     );
   }
-
 }

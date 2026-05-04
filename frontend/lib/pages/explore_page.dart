@@ -4,6 +4,7 @@ import '../design_tokens.dart';
 import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
+import '../services/listing_service.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -14,6 +15,31 @@ class ExplorePage extends StatefulWidget {
 
 class _ExplorePageState extends State<ExplorePage> {
   final TextEditingController searchController = TextEditingController();
+
+  bool isLoading = true;
+  List<dynamic> allListings = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadListings();
+  }
+
+  Future<void> _loadListings() async {
+    try {
+      final listings = await ListingService().getAllListings();
+      if (!mounted) return;
+      setState(() {
+        allListings = listings;
+        isLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   final List<AppNotification> notifications = const [
     AppNotification(
@@ -97,23 +123,49 @@ class _ExplorePageState extends State<ExplorePage> {
               const SizedBox(height: AppSpacing.lg),
               Text('Terrenos destacados', style: AppTextStyles.headlineSmall),
               const SizedBox(height: AppSpacing.md),
-              _buildExploreCard(
-                title: 'Pradera del Lago',
-                location: 'Bariloche, Argentina',
-                price: '\$1,450/mes',
-                score: 'NDVI 0.82',
-                image:
-                    'https://images.unsplash.com/photo-1472396961693-142e6e269027?q=80&w=1200&auto=format&fit=crop',
-              ),
-              const SizedBox(height: AppSpacing.md),
-              _buildExploreCard(
-                title: 'Campos de Santa Elena',
-                location: 'Mendoza, Argentina',
-                price: '\$980/mes',
-                score: 'NDVI 0.74',
-                image:
-                    'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1200&auto=format&fit=crop',
-              ),
+              if (isLoading)
+                const Center(
+                    child: Padding(
+                  padding: EdgeInsets.all(AppSpacing.lg),
+                  child: CircularProgressIndicator(),
+                ))
+              else if (allListings.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(AppSpacing.md),
+                  child: Text('No hay terrenos disponibles por el momento.'),
+                )
+              else
+                ...allListings.map((listing) {
+                  final title = listing['title']?.toString() ?? 'Sin título';
+
+                  String location = 'Ubicación desconocida';
+                  if (listing['location'] is Map) {
+                    final city = listing['location']['city'];
+                    final country = listing['location']['country'];
+                    if (city != null && country != null)
+                      location = '$city, $country';
+                  } else if (listing['location'] != null) {
+                    location = listing['location'].toString();
+                  }
+
+                  final images = listing['images'] as List<dynamic>?;
+                  final image = (images != null && images.isNotEmpty)
+                      ? images.first.toString()
+                      : 'https://placehold.co/1200x800?text=No+Image';
+
+                  final priceVal = listing['price']?.toString() ?? '0';
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: _buildExploreCard(
+                      title: title,
+                      location: location,
+                      price: '\$$priceVal/mes',
+                      score: 'NDVI 0.82', // Placeholder as required/unmentioned
+                      image: image,
+                    ),
+                  );
+                }),
               const SizedBox(height: 100),
             ],
           ),
@@ -198,7 +250,6 @@ class _ExplorePageState extends State<ExplorePage> {
       ),
     );
   }
-
 }
 
 class _FilterChip extends StatelessWidget {

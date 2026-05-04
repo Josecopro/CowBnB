@@ -4,6 +4,8 @@ import '../design_tokens.dart';
 import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
+import '../services/listing_service.dart';
+import 'dart:math';
 
 class MapDiscoveryPage extends StatefulWidget {
   const MapDiscoveryPage({Key? key}) : super(key: key);
@@ -21,6 +23,26 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
       icon: Icons.travel_explore,
     ),
   ];
+
+  List<dynamic> allListings = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadListings();
+  }
+
+  Future<void> _loadListings() async {
+    try {
+      final listings = await ListingService().getAllListings();
+      if (!mounted) return;
+      setState(() {
+        allListings = listings;
+      });
+    } catch (e) {
+      debugPrint('Error loading listings: \$e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,21 +100,38 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                   ),
 
                   // Price Pins
-                  Positioned(
-                    top: 100,
-                    left: 60,
-                    child: _buildePricePin('\$4,200'),
-                  ),
-                  Positioned(
-                    bottom: 80,
-                    right: 80,
-                    child: _buildePricePin('\$2,850'),
-                  ),
-                  Positioned(
-                    top: 160,
-                    right: 60,
-                    child: _buildePricePin('\$3,100', highlighted: true),
-                  ),
+                  if (allListings.isNotEmpty)
+                    ...allListings.take(4).map((listing) {
+                      final random = Random(listing.hashCode);
+                      // Random positions between 40 and 200 for top/bottom, 40 and 200 for left/right
+                      final top = 40.0 + random.nextInt(160);
+                      final left = 40.0 + random.nextInt(160);
+                      final price = '\$${listing['price'] ?? 0}';
+
+                      return Positioned(
+                        top: top,
+                        left: left,
+                        child: _buildePricePin(price,
+                            highlighted: random.nextBool()),
+                      );
+                    }).toList()
+                  else ...[
+                    Positioned(
+                      top: 100,
+                      left: 60,
+                      child: _buildePricePin('\$4,200'),
+                    ),
+                    Positioned(
+                      bottom: 80,
+                      right: 80,
+                      child: _buildePricePin('\$2,850'),
+                    ),
+                    Positioned(
+                      top: 160,
+                      right: 60,
+                      child: _buildePricePin('\$3,100', highlighted: true),
+                    ),
+                  ],
 
                   // Control Buttons (Top Right)
                   Positioned(
@@ -200,25 +239,58 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                 children: [
-                  _buildListingCard(
-                    title: 'Rancho Pradera Dorada',
-                    location: 'Boise, Idaho',
-                    image:
-                        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop',
-                    price: '\$1,200',
-                    rating: 4.9,
-                    acres: '120 hectareas',
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  _buildListingCard(
-                    title: 'Parcelas del Valle del Rio',
-                    location: 'Eugene, Oregon',
-                    image:
-                        'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1000&auto=format&fit=crop',
-                    price: '\$950',
-                    rating: 4.7,
-                    acres: '45 hectareas',
-                  ),
+                  if (allListings.isNotEmpty)
+                    ...allListings.map((listing) {
+                      String location = 'Ubicación no especificada';
+                      if (listing['location'] is Map) {
+                        final city = listing['location']['city'];
+                        final country = listing['location']['country'];
+                        if (city != null && country != null) {
+                          location = "$city, $country";
+                        }
+                      } else if (listing['location'] != null) {
+                        location = listing['location'].toString();
+                      }
+
+                      final images = listing['images'] as List<dynamic>?;
+                      final imageUrl = (images != null && images.isNotEmpty)
+                          ? images.first.toString()
+                          : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
+
+                      return Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.md),
+                        child: _buildListingCard(
+                          title: listing['title']?.toString() ?? 'Sin título',
+                          location: location,
+                          image: imageUrl,
+                          price: '\$${listing['price'] ?? 0}',
+                          rating:
+                              4.9, // Add real rating if available in data later
+                          acres: '${listing['totalArea'] ?? '0'} hectareas',
+                        ),
+                      );
+                    }).toList()
+                  else ...[
+                    _buildListingCard(
+                      title: 'Rancho Pradera Dorada',
+                      location: 'Boise, Idaho',
+                      image:
+                          'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop',
+                      price: '\$1,200',
+                      rating: 4.9,
+                      acres: '120 hectareas',
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    _buildListingCard(
+                      title: 'Parcelas del Valle del Rio',
+                      location: 'Eugene, Oregon',
+                      image:
+                          'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1000&auto=format&fit=crop',
+                      price: '\$950',
+                      rating: 4.7,
+                      acres: '45 hectareas',
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -298,7 +370,8 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
         decoration: BoxDecoration(
           color: AppColors.primary,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: highlighted ? Border.all(color: Colors.white, width: 2) : null,
+          border:
+              highlighted ? Border.all(color: Colors.white, width: 2) : null,
           boxShadow: [
             BoxShadow(
               color: AppColors.primaryDark.withOpacity(0.3),
@@ -424,9 +497,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.star,
-                              size: 16,
-                              color: Colors.amber),
+                          const Icon(Icons.star, size: 16, color: Colors.amber),
                           const SizedBox(width: 4),
                           Text(
                             rating.toString(),
@@ -547,5 +618,4 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
       ),
     );
   }
-
 }

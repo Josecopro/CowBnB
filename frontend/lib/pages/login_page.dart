@@ -137,8 +137,7 @@ class _Step3 extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Step 3: Review',
-              style: Theme.of(context).textTheme.titleLarge),
+          Text('Step 3: Review', style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 16),
           const Text('Review your information and submit.'),
         ],
