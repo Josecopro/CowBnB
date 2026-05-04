@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'pages/onboarding_page.dart';
 import 'pages/registration_page.dart';
+import 'pages/register_role_selection_page.dart';
 import 'pages/dashboard_renter_page.dart';
 import 'pages/dashboard_owner_page.dart';
 import 'pages/map_discovery_page.dart';
@@ -10,6 +11,7 @@ import 'pages/create_listing_page.dart';
 import 'pages/explore_page.dart';
 import 'pages/favorites_page.dart';
 import 'pages/messages_page.dart';
+import 'pages/login_page.dart';
 
 final GoRouter router = GoRouter(
   initialLocation: '/',
@@ -19,8 +21,19 @@ final GoRouter router = GoRouter(
       builder: (context, state) => const OnboardingPage(),
     ),
     GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginPage(),
+    ),
+    GoRoute(
+      path: '/register-role',
+      builder: (context, state) => const RegisterRoleSelectionPage(),
+    ),
+    GoRoute(
       path: '/register',
-      builder: (context, state) => const RegistrationPage(),
+      builder: (context, state) {
+        final role = state.uri.queryParameters['role'] ?? 'owner';
+        return RegistrationPage(initialRole: role);
+      },
     ),
     GoRoute(
       path: '/renter',

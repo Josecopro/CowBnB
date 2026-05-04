@@ -1,4 +1,4 @@
-# 🎨 AgroTerra Design System — Flutter + Dart + Agents
+# 🎨 CowBnB Design System — Flutter + Dart + Agents
 
 ---
 
@@ -294,7 +294,7 @@ class ExampleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("AgroTerra")),
+      appBar: AppBar(title: Text("CowBnB")),
       body: Padding(
         padding: EdgeInsets.all(AppSpacing.lg),
         child: Column(

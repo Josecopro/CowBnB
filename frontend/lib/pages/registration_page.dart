@@ -6,14 +6,17 @@ import '../components/optimized_network_image.dart';
 import '../services/auth_service.dart';
 
 class RegistrationPage extends StatefulWidget {
-  const RegistrationPage({Key? key}) : super(key: key);
+  final String initialRole;
+
+  const RegistrationPage({Key? key, this.initialRole = 'owner'})
+      : super(key: key);
 
   @override
   State<RegistrationPage> createState() => _RegistrationPageState();
 }
 
 class _RegistrationPageState extends State<RegistrationPage> {
-  String selectedRole = 'owner';
+  late String selectedRole;
   String selectedPhonePrefix = '+57';
   final List<String> phonePrefixes = ['+56', '+54', '+57', '+52', '+34', '+1', '+44'];
   final TextEditingController nameController = TextEditingController();
@@ -23,6 +26,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final AuthService authService = AuthService();
   bool isSubmitting = false;
   String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedRole = widget.initialRole;
+  }
 
   @override
   void dispose() {
@@ -112,7 +121,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           style: AppTextStyles.labelSmall,
                         ),
                         const SizedBox(height: AppSpacing.md),
-
                         _buildRoleSelector(),
 
                         const SizedBox(height: AppSpacing.lg),
@@ -338,6 +346,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       setState(() {
         errorMessage = 'Completa correo y contraseña.';
       });
+      print('[RegistrationPage] [${DateTime.now().toIso8601String()}] Validation failed: empty email or password');
       return;
     }
 
@@ -345,6 +354,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       isSubmitting = true;
       errorMessage = null;
     });
+    print('[RegistrationPage] [${DateTime.now().toIso8601String()}] Registration attempt for email=$email role=$selectedRole');
 
     try {
       await authService.registerWithEmail(
@@ -357,6 +367,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
         displayName: displayName.isEmpty ? null : displayName,
         phoneNumber: phone.isEmpty ? null : "$selectedPhonePrefix$phone",
       );
+
+      print('[RegistrationPage] [${DateTime.now().toIso8601String()}] Registration flow completed for email=$email role=$selectedRole');
 
       if (!mounted) return;
       if (selectedRole == 'owner') {

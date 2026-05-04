@@ -111,6 +111,42 @@ class OnboardingPage extends StatelessWidget {
 
                   const SizedBox(height: AppSpacing.xl),
 
+                  Text(
+                    'Cómo funciona',
+                    style: AppTextStyles.headlineSmall,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    'Sigue estos pasos rápidos para comenzar a buscar o arrendar tierras.',
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.lg),
+
+                  _buildFlowStep(
+                    step: '1',
+                    title: 'Elige tu objetivo',
+                    description:
+                        'Decide si quieres arrendar tu tierra o buscar terrenos disponibles.',
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _buildFlowStep(
+                    step: '2',
+                    title: 'Regístrate rápido',
+                    description:
+                        'Crea una cuenta y completa tu perfil para obtener resultados personalizados.',
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _buildFlowStep(
+                    step: '3',
+                    title: 'Comienza a operar',
+                    description:
+                        'Publica tu oferta o busca tu próximo terreno y gestiona todo desde la app.',
+                  ),
+
+                  const SizedBox(height: AppSpacing.xl),
+
                   // Features
                   _buildFeatureItem(
                     icon: Icons.search,
@@ -135,7 +171,7 @@ class OnboardingPage extends StatelessWidget {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: () => context.go('/register'),
+                      onPressed: () => context.go('/register-role'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
@@ -348,6 +384,64 @@ class OnboardingPage extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFlowStep({
+    required String step,
+    required String title,
+    required String description,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.border),
+      ),
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              step,
+              style: AppTextStyles.label.copyWith(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTextStyles.label.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  description,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

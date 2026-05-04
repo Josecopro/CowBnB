@@ -2,6 +2,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../config/app_config.dart';
 import 'api_client.dart';
 
+String _authLog(String message) {
+  final timestamp = DateTime.now().toIso8601String();
+  return '[AuthService] [$timestamp] $message';
+}
+
 class UserProfile {
   const UserProfile({
     required this.uid,
@@ -38,10 +43,18 @@ class AuthService {
     required String email,
     required String password,
   }) async {
-    return FirebaseAuth.instance.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+    print(_authLog('Registration request started for email=$email'));
+    try {
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      print(_authLog('Registration succeeded for uid=${credential.user?.uid} email=$email'));
+      return credential;
+    } catch (error) {
+      print(_authLog('Registration error for email=$email error=$error'));
+      rethrow;
+    }
   }
 
   Future<void> upsertProfile({
@@ -49,6 +62,7 @@ class AuthService {
     String? displayName,
     String? phoneNumber,
   }) async {
+    print(_authLog('Profile update started role=$role displayName=${displayName ?? 'empty'} phoneNumber=${phoneNumber ?? 'empty'}'));
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       throw Exception("missing_user");
@@ -67,6 +81,7 @@ class AuthService {
         "phone_number": phoneNumber,
       },
     );
+    print(_authLog('Profile update succeeded role=$role'));
   }
 
   Future<UserProfile?> getProfile() async {

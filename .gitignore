@@ -18,11 +18,15 @@ frontend/linux
 frontend/.dart*
 frontend/.*
 
+frontend/*.sh
+
 ##Backend files
 functions/node_modules
 functions/lib
 functions/.env
 functions/.env.*
 functions/.runtimeconfig.json
+functions/*.log
 .firebase
 
+frontend/devtools*
