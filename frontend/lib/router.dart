@@ -49,11 +49,17 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/listing',
-      builder: (context, state) => const ListingDetailsPage(),
+      builder: (context, state) {
+        final listing = state.extra as Map<String, dynamic>? ?? {};
+        return ListingDetailsPage(listing: listing);
+      },
     ),
     GoRoute(
       path: '/checkout',
-      builder: (context, state) => const CheckoutPage(),
+      builder: (context, state) {
+        final listing = state.extra as Map<String, dynamic>? ?? {};
+        return CheckoutPage(listing: listing);
+      },
     ),
     GoRoute(
       path: '/create-listing',

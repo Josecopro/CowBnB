@@ -7,4 +7,7 @@ export interface ListingData {
   images: string[];
   ownerId: string;
   createdAt: string;
+  views?: number;
+  rating?: number;
+  reviewCount?: number;
 }

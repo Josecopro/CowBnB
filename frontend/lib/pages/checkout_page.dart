@@ -6,7 +6,8 @@ import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
 
 class CheckoutPage extends StatefulWidget {
-  const CheckoutPage({Key? key}) : super(key: key);
+  final Map<String, dynamic> listing;
+  const CheckoutPage({Key? key, required this.listing}) : super(key: key);
 
   @override
   State<CheckoutPage> createState() => _CheckoutPageState();
@@ -18,6 +19,22 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
+    int nights = 1;
+    if (startDate != null && endDate != null) {
+      nights = endDate!.difference(startDate!).inDays;
+      if (nights <= 0) nights = 1;
+    }
+    
+    final int pricePerNight = int.tryParse(widget.listing['price']?.toString() ?? '1200') ?? 1200;
+    final int subtotal = nights * pricePerNight;
+    final double serviceFee = subtotal * 0.05; // 5% fee
+    final double taxes = subtotal * 0.19; // 19% tax
+    final double total = subtotal + serviceFee + taxes;
+
+    final String imgUrl = (widget.listing['images'] != null && widget.listing['images'] is List && widget.listing['images'].isNotEmpty)
+      ? widget.listing['images'][0].toString()
+      : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
@@ -36,7 +53,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
             if (Navigator.canPop(context)) {
               Navigator.pop(context);
             } else {
-              context.go('/listing');
+              context.pop();
             }
           },
         ),
@@ -55,8 +72,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(AppRadius.lg),
                       child: AppNetworkImage(
-                        imageUrl:
-                            'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop',
+                        imageUrl: imgUrl,
                         height: 150,
                         width: double.infinity,
                         fit: BoxFit.cover,
@@ -65,7 +81,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      'Valle de los Girasoles',
+                      widget.listing['title']?.toString() ?? 'Sin Titulo',
                       style: AppTextStyles.label.copyWith(
                         fontSize: 16,
                       ),
@@ -77,7 +93,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                             size: 16, color: AppColors.textSecondary),
                         const SizedBox(width: 4),
                         Text(
-                          'Córdoba, Argentina • 12 Hectáreas',
+                          '${widget.listing['location']?.toString() ?? 'Cordoba, Argentina'} • ${widget.listing['size']?.toString() ?? '12'} Hectareas',
                           style: AppTextStyles.bodySmall.copyWith(
                             color: AppColors.textSecondary,
                           ),
@@ -202,9 +218,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
               const SizedBox(height: AppSpacing.md),
 
-              _buildPriceRow('Noche (12 hectáreas)', '\$1,200', '1'),
-              _buildPriceRow('Gastos de servicio', '\$120', ''),
-              _buildPriceRow('Impuestos', '\$132', ''),
+              _buildPriceRow('Noche', '\$${pricePerNight.toStringAsFixed(0)}', '$nights'),
+              _buildPriceRow('Gastos de servicio', '\$${serviceFee.toStringAsFixed(0)}', ''),
+              _buildPriceRow('Impuestos', '\$${taxes.toStringAsFixed(0)}', ''),
 
               const SizedBox(height: AppSpacing.md),
 
@@ -226,7 +242,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       ),
                     ),
                     Text(
-                      '\$1,452',
+                      '\$${total.toStringAsFixed(0)}',
                       style: AppTextStyles.headline.copyWith(
                         color: AppColors.primary,
                         fontSize: 20,

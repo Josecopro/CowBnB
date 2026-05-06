@@ -217,7 +217,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
         _buildStatCard(
           icon: Icons.calendar_month,
           label: 'Reservas Activas',
-          value: '03',
+          value: '0',
         ),
         _buildStatCard(
           icon: Icons.favorite,
@@ -227,12 +227,12 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
         _buildStatCard(
           icon: Icons.message,
           label: 'Mensajes',
-          value: '05',
+          value: '0',
         ),
         _buildStatCard(
           icon: Icons.landscape,
           label: 'Hectáreas',
-          value: '45.2',
+          value: '0',
         ),
       ],
     );
@@ -302,32 +302,10 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
           )
         else
           ...allListings.take(2).map((listing) {
-            String location = 'Ubicación no especificada';
-            if (listing['location'] is Map) {
-              final city = listing['location']['city'];
-              final country = listing['location']['country'];
-              if (city != null && country != null) {
-                location = "$city, $country";
-              }
-            } else if (listing['location'] != null) {
-              location = listing['location'].toString();
-            }
-
-            final images = listing['images'] as List<dynamic>?;
-            final imageUrl = (images != null && images.isNotEmpty)
-                ? images.first.toString()
-                : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
-
             return Column(
               children: [
                 _buildBookingCard(
-                  title: listing['title']?.toString() ?? 'Sin título',
-                  location:
-                      "$location • ${listing['totalArea'] ?? '0'} Hectáreas",
-                  image: imageUrl,
-                  status: 'Confirmado',
-                  dates: '15 Oct - 20 Dic',
-                  price: '\$${listing['price'] ?? 0}/mes',
+                  listing: listing as Map<String, dynamic>,
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],
@@ -338,15 +316,33 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
   }
 
   Widget _buildBookingCard({
-    required String title,
-    required String location,
-    required String image,
-    required String status,
-    required String dates,
-    required String price,
+    required Map<String, dynamic> listing,
   }) {
+    final title = listing['title']?.toString() ?? 'Sin título';
+
+    String locStr = 'Ubicación no especificada';
+    if (listing['location'] is Map) {
+      final city = listing['location']['city'];
+      final country = listing['location']['country'];
+      if (city != null && country != null) {
+        locStr = "$city, $country";
+      }
+    } else if (listing['location'] != null) {
+      locStr = listing['location'].toString();
+    }
+
+    final images = listing['images'] as List<dynamic>?;
+    final image = (images != null && images.isNotEmpty)
+        ? images.first.toString()
+        : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
+
+    final location = "$locStr • ${listing['totalArea'] ?? '0'} Hectáreas";
+    final status = 'Confirmado';
+    final dates = '15 Oct - 20 Dic';
+    final price = '\$${listing['price'] ?? 0}/mes';
+
     return GestureDetector(
-      onTap: () => context.go('/listing'),
+      onTap: () => context.push('/listing', extra: listing),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -361,12 +357,19 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                 topLeft: Radius.circular(AppRadius.lg),
                 topRight: Radius.circular(AppRadius.lg),
               ),
-              child: AppNetworkImage(
-                imageUrl: image,
-                height: 150,
+              child: Image.network(
+                image,
+                height: 120,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                memCacheWidth: 800,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    height: 120,
+                    width: double.infinity,
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                  );
+                },
               ),
             ),
             Padding(

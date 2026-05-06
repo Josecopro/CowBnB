@@ -59,4 +59,15 @@ listing_routes.get("/me", async (c) => {
   }
 });
 
+listing_routes.post("/:id/view", async (c) => {
+  try {
+    const id = c.req.param("id");
+    await service.incrementViews(id);
+    return c.json({ success: true }, 200);
+  } catch (error) {
+    console.error(`Error incrementing views for ${c.req.param("id")}`, error);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
 export { listing_routes };

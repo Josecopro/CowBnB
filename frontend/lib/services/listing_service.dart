@@ -95,4 +95,18 @@ class ListingService {
       throw Exception(response['error'] ?? 'Unknown error fetching all listings');
     }
   }
+
+  Future<void> recordView(String listingId) async {
+    final user = _auth.currentUser;
+    final idToken = user != null ? await user.getIdToken() : null;
+    try {
+      await apiClient.postJson(
+        '/api/listings/$listingId/view',
+        idToken: idToken ?? '',
+        body: {},
+      );
+    } catch (e) {
+      debugPrint('Error recording view: $e');
+    }
+  }
 }

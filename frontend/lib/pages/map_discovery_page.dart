@@ -241,54 +241,32 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                 children: [
                   if (allListings.isNotEmpty)
                     ...allListings.map((listing) {
-                      String location = 'Ubicación no especificada';
-                      if (listing['location'] is Map) {
-                        final city = listing['location']['city'];
-                        final country = listing['location']['country'];
-                        if (city != null && country != null) {
-                          location = "$city, $country";
-                        }
-                      } else if (listing['location'] != null) {
-                        location = listing['location'].toString();
-                      }
-
-                      final images = listing['images'] as List<dynamic>?;
-                      final imageUrl = (images != null && images.isNotEmpty)
-                          ? images.first.toString()
-                          : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
-
                       return Padding(
                         padding: const EdgeInsets.only(right: AppSpacing.md),
                         child: _buildListingCard(
-                          title: listing['title']?.toString() ?? 'Sin título',
-                          location: location,
-                          image: imageUrl,
-                          price: '\$${listing['price'] ?? 0}',
-                          rating:
-                              4.9, // Add real rating if available in data later
-                          acres: '${listing['totalArea'] ?? '0'} hectareas',
+                          listing: listing as Map<String, dynamic>,
                         ),
                       );
                     }).toList()
                   else ...[
                     _buildListingCard(
-                      title: 'Rancho Pradera Dorada',
-                      location: 'Boise, Idaho',
-                      image:
-                          'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop',
-                      price: '\$1,200',
-                      rating: 4.9,
-                      acres: '120 hectareas',
+                      listing: {
+                        'title': 'Rancho Pradera Dorada',
+                        'location': 'Boise, Idaho',
+                        'images': ['https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop'],
+                        'price': '1,200',
+                        'totalArea': '120',
+                      },
                     ),
                     const SizedBox(width: AppSpacing.md),
                     _buildListingCard(
-                      title: 'Parcelas del Valle del Rio',
-                      location: 'Eugene, Oregon',
-                      image:
-                          'https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1000&auto=format&fit=crop',
-                      price: '\$950',
-                      rating: 4.7,
-                      acres: '45 hectareas',
+                      listing: {
+                        'title': 'Parcelas del Valle del Rio',
+                        'location': 'Eugene, Oregon',
+                        'images': ['https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1000&auto=format&fit=crop'],
+                        'price': '950',
+                        'totalArea': '45',
+                      },
                     ),
                   ],
                 ],
@@ -409,15 +387,33 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
   }
 
   Widget _buildListingCard({
-    required String title,
-    required String location,
-    required String image,
-    required String price,
-    required double rating,
-    required String acres,
+    required Map<String, dynamic> listing,
   }) {
+    final title = listing['title']?.toString() ?? 'Sin título';
+
+    String location = 'Ubicación no especificada';
+    if (listing['location'] is Map) {
+      final city = listing['location']['city'];
+      final country = listing['location']['country'];
+      if (city != null && country != null) {
+        location = "$city, $country";
+      }
+    } else if (listing['location'] != null) {
+      location = listing['location'].toString();
+    }
+
+    final images = listing['images'] as List<dynamic>?;
+    final image = (images != null && images.isNotEmpty)
+        ? images.first.toString()
+        : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
+
+    final priceStr = listing['price']?.toString() ?? '0';
+    final price = '\$$priceStr';
+    final rating = 4.9; // Add real rating if available in data later
+    final acres = '${listing['totalArea'] ?? '0'} hectareas';
+
     return GestureDetector(
-      onTap: () => context.go('/listing'),
+      onTap: () => context.push('/listing', extra: listing),
       child: Container(
         width: 280,
         decoration: BoxDecoration(

@@ -37,4 +37,8 @@ export class ListingService {
   async getListingsByOwner(uid: string) {
     return this.repository.getListingsByOwner(uid);
   }
+
+  async incrementViews(id: string) {
+    return this.repository.incrementViews(id);
+  }
 }

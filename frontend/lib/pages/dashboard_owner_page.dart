@@ -169,7 +169,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      '\$5,850',
+                      '\$0',
                       style: AppTextStyles.headlineLarge.copyWith(
                         color: Colors.white,
                         fontSize: 36,
@@ -177,7 +177,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      '+12% vs mes anterior',
+                      '0% (Usuario nuevo)',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.white70,
                       ),
@@ -189,36 +189,39 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
               const SizedBox(height: AppSpacing.lg),
 
               // Stats Grid
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                childAspectRatio: 1.2,
-                children: [
-                  _buildStatCard(
-                    icon: Icons.home,
-                    label: 'Propiedades',
-                    value: isLoadingListings
-                        ? '...'
-                        : myListings.length.toString().padLeft(2, '0'),
-                  ),
-                  _buildStatCard(
-                    icon: Icons.check_circle,
-                    label: 'Reservas Activas',
-                    value: '02',
-                  ),
-                  _buildStatCard(
-                    icon: Icons.people,
-                    label: 'Arrendatarios',
-                    value: '08',
-                  ),
-                  _buildStatCard(
-                    icon: Icons.visibility,
-                    label: 'Visualizaciones',
-                    value: '342',
-                  ),
-                ],
-              ),
+              (() {
+                final totalViews = myListings.fold<int>(0, (sum, l) => sum + ((l['views'] as num?)?.toInt() ?? 0));
+                return GridView.count(
+                  crossAxisCount: 2,
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  childAspectRatio: 1.2,
+                  children: [
+                    _buildStatCard(
+                      icon: Icons.home,
+                      label: 'Propiedades',
+                      value: isLoadingListings
+                          ? '...'
+                          : myListings.length.toString().padLeft(2, '0'),
+                    ),
+                    _buildStatCard(
+                      icon: Icons.check_circle,
+                      label: 'Reservas Activas',
+                      value: '0',
+                    ),
+                    _buildStatCard(
+                      icon: Icons.people,
+                      label: 'Arrendatarios',
+                      value: '0',
+                    ),
+                    _buildStatCard(
+                      icon: Icons.visibility,
+                      label: 'Visualizaciones',
+                      value: totalViews.toString(),
+                    ),
+                  ],
+                );
+              })(),
 
               const SizedBox(height: AppSpacing.lg),
 
@@ -257,36 +260,10 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                 )
               else
                 ...myListings.map((listing) {
-                  final title = listing['title']?.toString() ?? 'Sin título';
-
-                  String locStr = 'Ubicación desconocida';
-                  if (listing['location'] is Map) {
-                    final city = listing['location']['city'];
-                    final country = listing['location']['country'];
-                    if (city != null && country != null)
-                      locStr = '$city, $country';
-                  } else if (listing['location'] != null) {
-                    locStr = listing['location'].toString();
-                  }
-
-                  final size = listing['size']?.toString() ?? '0';
-                  final locationAndSize = '$locStr • $size Hectáreas';
-
-                  final images = listing['images'] as List<dynamic>?;
-                  final image = (images != null && images.isNotEmpty)
-                      ? images.first.toString()
-                      : 'https://placehold.co/1000x800?text=No+Image';
-
-                  final priceVal = listing['price']?.toString() ?? '0';
-
                   return Padding(
                     padding: const EdgeInsets.only(bottom: AppSpacing.md),
                     child: _buildPropertyCard(
-                      title: title,
-                      location: locationAndSize,
-                      image: image,
-                      status: 'Activo',
-                      earnings: '\$$priceVal/mes',
+                      listing: listing as Map<String, dynamic>,
                     ),
                   );
                 }),
@@ -384,13 +361,35 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
   }
 
   Widget _buildPropertyCard({
-    required String title,
-    required String location,
-    required String image,
-    required String status,
-    required String earnings,
+    required Map<String, dynamic> listing,
   }) {
-    return Container(
+    final title = listing['title']?.toString() ?? 'Sin título';
+
+    String locStr = 'Ubicación desconocida';
+    if (listing['location'] is Map) {
+      final city = listing['location']['city'];
+      final country = listing['location']['country'];
+      if (city != null && country != null)
+        locStr = '$city, $country';
+    } else if (listing['location'] != null) {
+      locStr = listing['location'].toString();
+    }
+
+    final size = listing['size']?.toString() ?? '0';
+    final location = '$locStr • $size Hectáreas';
+
+    final images = listing['images'] as List<dynamic>?;
+    final image = (images != null && images.isNotEmpty)
+        ? images.first.toString()
+        : 'https://placehold.co/1000x800?text=No+Image';
+
+    final priceVal = listing['price']?.toString() ?? '0';
+    final earnings = '\$$priceVal/mes';
+    final status = 'Activo';
+
+    return GestureDetector(
+      onTap: () => context.push('/listing', extra: listing),
+      child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -478,6 +477,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
           ),
         ],
       ),
+    ),
     );
   }
 }

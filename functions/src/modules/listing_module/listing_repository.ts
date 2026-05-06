@@ -1,12 +1,24 @@
 import { db, storage } from "../../config/firebase_admin";
 import { ListingData } from "./listing_types";
 import { v4 as uuidv4 } from "uuid";
+import { FieldValue } from "firebase-admin/firestore";
 
 export class ListingRepository {
   async createListing(data: ListingData): Promise<string> {
     const docRef = db.collection("listings").doc();
-    await docRef.set(data);
+    const dataWithStats = {
+      ...data,
+      views: data.views ?? 0,
+      rating: data.rating ?? 0,
+      reviewCount: data.reviewCount ?? 0,
+    };
+    await docRef.set(dataWithStats);
     return docRef.id;
+  }
+
+  async incrementViews(id: string): Promise<void> {
+    const docRef = db.collection("listings").doc(id);
+    await docRef.update({ views: FieldValue.increment(1) });
   }
 
   async getListingsByOwner(ownerId: string): Promise<(ListingData & { id: string })[]> {

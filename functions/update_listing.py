@@ -1,4 +1,6 @@
-import 'dart:async';
+import sys
+
+content = """import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
@@ -20,20 +22,6 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
   Timer? _carouselTimer;
   int _currentPage = 0;
 
-  void _startCarouselTimer(List<String> images) {
-    _carouselTimer?.cancel();
-    _carouselTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
-      if (_pageController.hasClients) {
-        _currentPage = (_currentPage + 1) % images.length;
-        _pageController.animateToPage(
-          _currentPage,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
-  }
-
   @override
   void initState() {
     super.initState();
@@ -45,7 +33,16 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
 
     final images = _getImagesUrls();
     if (images.length > 1) {
-      _startCarouselTimer(images);
+      _carouselTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+        if (_pageController.hasClients) {
+          _currentPage = (_currentPage + 1) % images.length;
+          _pageController.animateToPage(
+            _currentPage,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
     }
   }
 
@@ -92,12 +89,7 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
       width: double.infinity,
       child: PageView.builder(
         controller: _pageController,
-        onPageChanged: (idx) {
-          _currentPage = idx;
-          if (images.length > 1) {
-            _startCarouselTimer(images);
-          }
-        },
+        onPageChanged: (idx) => _currentPage = idx,
         itemCount: images.length,
         itemBuilder: (context, index) {
           return AppNetworkImage(
@@ -317,7 +309,7 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                           width: 120,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () => context.push('/checkout', extra: widget.listing),
+                            onPressed: () => context.go('/checkout'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
                               shape: RoundedRectangleBorder(
@@ -396,3 +388,8 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
     );
   }
 }
+"""
+
+with open("/home/sanma613/UProjects/CowBnB/frontend/lib/pages/listing_details_page.dart", "w") as f:
+    f.write(content)
+
