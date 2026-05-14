@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'notification_service.dart';
 
 class ChatMessage {
   final String id;
@@ -155,6 +156,30 @@ class ChatService {
       'lastSenderId': uid,
       'unread': unreadMap,
     });
+
+    final otherParticipant = participants.firstWhere(
+      (p) => p != uid,
+      orElse: () => '',
+    );
+    if (otherParticipant.isNotEmpty) {
+      final convoSnapshot =
+          await _conversationsRef.child(conversationId).child('listingTitle').get();
+      final listingTitle = convoSnapshot.value?.toString() ?? '';
+
+      final senderName = _userName ?? 'Usuario';
+      NotificationService().createNotification(
+        recipientId: otherParticipant,
+        type: 'message',
+        title: 'Nuevo mensaje',
+        description: '$senderName te envió un mensaje${listingTitle.isNotEmpty ? ' sobre $listingTitle' : ''}',
+        data: {
+          'conversationId': conversationId,
+          'senderName': senderName,
+          'listingTitle': listingTitle,
+        },
+        icon: 'message',
+      );
+    }
   }
 
   Stream<List<ChatMessage>> messagesStream(String conversationId) {

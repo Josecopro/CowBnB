@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'design_tokens.dart';
 import 'firebase_options.dart';
@@ -30,6 +31,7 @@ class _AppBootstrapState extends State<AppBootstrap> {
       ).timeout(const Duration(seconds: 10));
       if (kDebugMode) {
         FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+        FirebaseDatabase.instance.useDatabaseEmulator('localhost', 9000);
       }
       PaintingBinding.instance.imageCache.maximumSize = 250;
       PaintingBinding.instance.imageCache.maximumSizeBytes = 180 << 20;

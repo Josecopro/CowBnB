@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../design_tokens.dart';
+import '../services/notification_service.dart';
 
 class AppNotification {
   const AppNotification({
@@ -76,11 +77,8 @@ class NotificationBellButton extends StatelessWidget {
 Future<void> showNotificationsModal(
   BuildContext context, {
   required List<AppNotification> notifications,
+  NotificationService? notificationService,
 }) {
-  final List<AppNotification> localNotifications = List<AppNotification>.from(
-    notifications,
-  );
-
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -88,7 +86,7 @@ Future<void> showNotificationsModal(
     builder: (context) {
       return StatefulBuilder(
         builder: (context, setModalState) {
-          final bool hasNotifications = localNotifications.isNotEmpty;
+          final bool hasNotifications = notifications.isNotEmpty;
 
           return Container(
             height: MediaQuery.of(context).size.height * 0.72,
@@ -123,10 +121,10 @@ Future<void> showNotificationsModal(
                       if (hasNotifications)
                         TextButton(
                           onPressed: () {
-                            setModalState(localNotifications.clear);
+                            notificationService?.markAllAsRead();
                           },
                           child: Text(
-                            'Limpiar',
+                            'Marcar todo leído',
                             style: AppTextStyles.label.copyWith(
                               color: AppColors.primary,
                             ),
@@ -145,14 +143,14 @@ Future<void> showNotificationsModal(
                           ),
                           itemBuilder: (context, index) {
                             final AppNotification notification =
-                                localNotifications[index];
+                                notifications[index];
                             return _NotificationTile(
                               notification: notification,
                             );
                           },
                           separatorBuilder: (context, index) =>
                               const SizedBox(height: AppSpacing.sm),
-                          itemCount: localNotifications.length,
+                          itemCount: notifications.length,
                         )
                       : _buildEmptyState(),
                 ),

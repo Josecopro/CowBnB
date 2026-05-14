@@ -6,6 +6,8 @@ import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
 import '../services/listing_service.dart';
 import '../services/auth_service.dart';
+import '../services/reservation_service.dart';
+import '../services/chat_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ListingDetailsPage extends StatefulWidget {
@@ -22,13 +24,16 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
   Timer? _carouselTimer;
   int _currentPage = 0;
   bool _isFavorited = false;
+  bool _hasBooking = false;
   final AuthService _authService = AuthService();
+  final ChatService _chatService = ChatService();
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
     _checkFavorite();
+    _checkBooking();
 
     if (widget.listing['id'] != null) {
       ListingService().recordView(widget.listing['id']);
@@ -37,6 +42,65 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
     final images = _getImagesUrls();
     if (images.length > 1) {
       _startCarouselTimer(images);
+    }
+  }
+
+  Future<void> _checkBooking() async {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUid == null) return;
+    final listingId = widget.listing['id']?.toString();
+    if (listingId == null) return;
+    try {
+      final renterReservations = await ReservationService().getMyReservations();
+      bool hasBooking = renterReservations.any((r) {
+        final rMap = r as Map<String, dynamic>;
+        return rMap['listingId']?.toString() == listingId &&
+            (rMap['status']?.toString() == 'confirmed' ||
+                rMap['status']?.toString() == 'active' ||
+                rMap['status']?.toString() == 'completed');
+      });
+      if (!hasBooking) {
+        final ownerReservations = await ReservationService().getOwnerReservations();
+        hasBooking = ownerReservations.any((r) {
+          final rMap = r as Map<String, dynamic>;
+          return rMap['listingId']?.toString() == listingId &&
+              (rMap['status']?.toString() == 'confirmed' ||
+                  rMap['status']?.toString() == 'active' ||
+                  rMap['status']?.toString() == 'completed');
+        });
+      }
+      if (!mounted) return;
+      setState(() => _hasBooking = hasBooking);
+    } catch (e) {
+      // Silently fail - no booking relationship
+    }
+  }
+
+  Future<void> _openChat() async {
+    final listingId = widget.listing['id']?.toString();
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final ownerId = widget.listing['ownerId']?.toString();
+    final renterId = widget.listing['renterId']?.toString();
+    final title = widget.listing['title']?.toString() ?? 'Terreno';
+
+    final otherUserId = currentUid == ownerId ? renterId : ownerId;
+    if (otherUserId == null || otherUserId.isEmpty) return;
+
+    try {
+      final conversationId = await _chatService.createConversation(
+        otherUserId: otherUserId,
+        listingTitle: title,
+        listingId: listingId,
+      );
+      if (mounted) {
+        context.push('/chat?id=$conversationId&title=${Uri.encodeComponent(title)}');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al abrir el chat')),
+        );
+      }
     }
   }
 
@@ -315,6 +379,26 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                     Text(
                       widget.listing['ownerId'].toString(),
                       style: AppTextStyles.body.copyWith(color: AppColors.textSecondary),
+                    ),
+                  ],
+                  const SizedBox(height: AppSpacing.lg),
+                  if (!isOwner && _hasBooking) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: _openChat,
+                        icon: const Icon(Icons.chat, size: 20),
+                        label: const Text('Contactar al propietario'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(AppRadius.lg),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                   const SizedBox(height: AppSpacing.lg),

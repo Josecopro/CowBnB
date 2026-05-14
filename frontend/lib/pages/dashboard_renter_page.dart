@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -5,10 +6,9 @@ import '../design_tokens.dart';
 import '../components/app_components.dart';
 import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
-import '../components/optimized_network_image.dart';
 import '../services/auth_service.dart';
-import '../services/listing_service.dart';
 import '../services/reservation_service.dart';
+import '../services/notification_service.dart';
 
 class DashboardRenterPage extends StatefulWidget {
   const DashboardRenterPage({Key? key}) : super(key: key);
@@ -18,21 +18,9 @@ class DashboardRenterPage extends StatefulWidget {
 }
 
 class _DashboardRenterPageState extends State<DashboardRenterPage> {
-  final List<AppNotification> notifications = const [
-    AppNotification(
-      title: 'Nuevo mensaje del propietario',
-      description: 'Tienes una actualizacion en Rancho del Sur.',
-      time: 'Hace 8 min',
-      icon: Icons.message,
-    ),
-    AppNotification(
-      title: 'Reserva confirmada',
-      description: 'Tu reserva para Valle de los Girasoles fue confirmada.',
-      time: 'Hace 1 h',
-      icon: Icons.check_circle,
-      isRead: true,
-    ),
-  ];
+  final NotificationService _notificationService = NotificationService();
+  StreamSubscription? _notificationsSub;
+  List<AppNotificationData> _notifications = [];
   final AuthService authService = AuthService();
   UserProfile? profile;
   bool isLoadingProfile = true;
@@ -44,6 +32,16 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
     super.initState();
     _loadProfile();
     _loadReservations();
+    _notificationsSub = _notificationService.notificationsStream().listen((notifs) {
+      if (!mounted) return;
+      setState(() => _notifications = notifs);
+    });
+  }
+
+  @override
+  void dispose() {
+    _notificationsSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadReservations() async {
@@ -179,10 +177,11 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
       ),
       actions: [
         NotificationBellButton(
-          notifications: notifications,
+          notifications: _notifications.map((n) => n.toLegacy()).toList(),
           onPressed: () => showNotificationsModal(
             context,
-            notifications: notifications,
+            notifications: _notifications.map((n) => n.toLegacy()).toList(),
+            notificationService: _notificationService,
           ),
         ),
         PopupMenuButton<String>(

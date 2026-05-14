@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
@@ -5,6 +6,7 @@ import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
 import '../services/listing_service.dart';
+import '../services/notification_service.dart';
 
 class ExplorePage extends StatefulWidget {
   const ExplorePage({super.key});
@@ -15,6 +17,9 @@ class ExplorePage extends StatefulWidget {
 
 class _ExplorePageState extends State<ExplorePage> {
   final TextEditingController searchController = TextEditingController();
+  final NotificationService _notificationService = NotificationService();
+  StreamSubscription? _notificationsSub;
+  List<AppNotificationData> _notifications = [];
 
   bool isLoading = true;
   List<dynamic> allListings = [];
@@ -31,6 +36,17 @@ class _ExplorePageState extends State<ExplorePage> {
   void initState() {
     super.initState();
     _loadListings();
+    _notificationsSub = _notificationService.notificationsStream().listen((notifs) {
+      if (!mounted) return;
+      setState(() => _notifications = notifs);
+    });
+  }
+
+  @override
+  void dispose() {
+    _notificationsSub?.cancel();
+    searchController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadListings() async {
@@ -111,28 +127,6 @@ class _ExplorePageState extends State<ExplorePage> {
     });
   }
 
-  final List<AppNotification> notifications = const [
-    AppNotification(
-      title: 'Nuevos terrenos cerca de ti',
-      description: 'Se agregaron 3 terrenos en un radio de 30 km.',
-      time: 'Hace 12 min',
-      icon: Icons.travel_explore,
-    ),
-    AppNotification(
-      title: 'Cambio en una reserva',
-      description: 'Tu solicitud para Laderas del Sur fue actualizada.',
-      time: 'Hace 1 h',
-      icon: Icons.calendar_today,
-      isRead: true,
-    ),
-  ];
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -148,10 +142,11 @@ class _ExplorePageState extends State<ExplorePage> {
         ),
         actions: [
           NotificationBellButton(
-            notifications: notifications,
+            notifications: _notifications.map((n) => n.toLegacy()).toList(),
             onPressed: () => showNotificationsModal(
               context,
-              notifications: notifications,
+              notifications: _notifications.map((n) => n.toLegacy()).toList(),
+              notificationService: _notificationService,
             ),
           ),
         ],

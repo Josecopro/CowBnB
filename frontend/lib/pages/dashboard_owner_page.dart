@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,7 @@ import '../components/notifications_modal.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
 import '../services/reservation_service.dart';
+import '../services/notification_service.dart';
 
 class DashboardOwnerPage extends StatefulWidget {
   const DashboardOwnerPage({Key? key}) : super(key: key);
@@ -17,21 +19,9 @@ class DashboardOwnerPage extends StatefulWidget {
 }
 
 class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
-  final List<AppNotification> notifications = const [
-    AppNotification(
-      title: 'Nueva consulta de arrendatario',
-      description: 'Camila pregunto por disponibilidad en Tierra Verde.',
-      time: 'Hace 5 min',
-      icon: Icons.chat_bubble,
-    ),
-    AppNotification(
-      title: 'Pago recibido',
-      description: 'Se recibio el pago mensual de Rancho del Sur.',
-      time: 'Hace 2 h',
-      icon: Icons.payments,
-      isRead: true,
-    ),
-  ];
+  final NotificationService _notificationService = NotificationService();
+  StreamSubscription? _notificationsSub;
+  List<AppNotificationData> _notifications = [];
   final AuthService authService = AuthService();
   UserProfile? profile;
   bool isLoadingProfile = true;
@@ -48,6 +38,16 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
     _loadProfile();
     _loadListings();
     _loadReservations();
+    _notificationsSub = _notificationService.notificationsStream().listen((notifs) {
+      if (!mounted) return;
+      setState(() => _notifications = notifs);
+    });
+  }
+
+  @override
+  void dispose() {
+    _notificationsSub?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadReservations() async {
@@ -427,10 +427,11 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
       ),
       actions: [
         NotificationBellButton(
-          notifications: notifications,
+          notifications: _notifications.map((n) => n.toLegacy()).toList(),
           onPressed: () => showNotificationsModal(
             context,
-            notifications: notifications,
+            notifications: _notifications.map((n) => n.toLegacy()).toList(),
+            notificationService: _notificationService,
           ),
         ),
         PopupMenuButton<String>(
