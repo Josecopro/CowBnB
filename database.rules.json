@@ -1,0 +1,36 @@
+{
+  "rules": {
+    ".read": "auth !== null",
+    ".write": "auth !== null",
+    "messages": {
+      "$conversationId": {
+        ".read": "auth !== null",
+        ".write": "auth !== null",
+        "$messageId": {
+          ".validate": "newData.hasChildren(['senderId', 'text', 'timestamp']) && newData.child('senderId').val() === auth.uid"
+        }
+      }
+    },
+    "conversations": {
+      "$conversationId": {
+        ".read": "auth !== null && data.child('participants').val().includes(auth.uid)",
+        ".write": "auth !== null"
+      }
+    },
+    "user_conversations": {
+      "$userId": {
+        ".read": "auth !== null && $userId === auth.uid",
+        ".write": "auth !== null && $userId === auth.uid"
+      }
+    },
+    "notifications": {
+      "$userId": {
+        ".read": "auth !== null && $userId === auth.uid",
+        ".write": "auth !== null",
+        "$notificationId": {
+          ".validate": "newData.hasChildren(['type', 'title', 'description', 'timestamp'])"
+        }
+      }
+    }
+  }
+}
