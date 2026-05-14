@@ -21,17 +21,18 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   @override
   Widget build(BuildContext context) {
-    int nights = 1;
+    int months = 1;
     if (startDate != null && endDate != null) {
-      nights = endDate!.difference(startDate!).inDays;
-      if (nights <= 0) nights = 1;
+      final days = endDate!.difference(startDate!).inDays;
+      months = (days / 30).ceil();
+      if (months <= 0) months = 1;
     }
     
     const double minTaxes = 1000;
-    final int pricePerNight = int.tryParse(widget.listing['price']?.toString() ?? '1200') ?? 1200;
-    final double maintenancePerNight = (widget.listing['maintenanceCost'] as num?)?.toDouble() ?? 0;
-    final int subtotal = nights * pricePerNight;
-    final double maintenanceTotal = maintenancePerNight * nights;
+    final int monthlyPrice = int.tryParse(widget.listing['price']?.toString() ?? '1200') ?? 1200;
+    final double maintenanceMonthly = (widget.listing['maintenanceCost'] as num?)?.toDouble() ?? 0;
+    final int subtotal = months * monthlyPrice;
+    final double maintenanceTotal = maintenanceMonthly * months;
     final double taxes = math.max(subtotal * 0.19, minTaxes);
     final double total = subtotal + maintenanceTotal + taxes;
 
@@ -222,7 +223,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ),
               const SizedBox(height: AppSpacing.md),
 
-              _buildPriceRow('Noche', '\$${pricePerNight.toStringAsFixed(0)}', '$nights'),
+              _buildPriceRow('Mes', '\$${monthlyPrice.toStringAsFixed(0)}', '$months'),
               _buildPriceRow('Gastos de servicios', '\$${maintenanceTotal.toStringAsFixed(0)}', maintenancePerNight > 0 ? '$nights' : ''),
               _buildPriceRow('Impuestos', '\$${taxes.toStringAsFixed(0)}', ''),
 

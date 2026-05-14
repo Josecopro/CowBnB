@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../design_tokens.dart';
+import '../design_tokens.dart';
 import '../services/auth_service.dart';
 import '../pages/listing_details_page.dart';
 
@@ -60,7 +60,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   itemBuilder: (context, index) {
                     final fav = _favorites[index];
                     final String imageUrl = (fav['images'] != null && fav['images'].isNotEmpty) 
-                        ? (fav['images'][0]['url'] ?? 'https://placehold.co/400x300.png')
+                        ? (fav['images'][0].toString() ?? 'https://placehold.co/400x300.png')
                         : 'https://placehold.co/400x300.png';
                         
                     return Card(

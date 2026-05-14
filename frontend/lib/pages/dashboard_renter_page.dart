@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../design_tokens.dart';
 import '../components/app_components.dart';
 import '../components/notifications_modal.dart';
@@ -183,9 +184,20 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
             notifications: notifications,
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: _buildProfileAvatar(),
+        PopupMenuButton<String>(
+          icon: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: _buildProfileAvatar(),
+          ),
+          onSelected: (value) async {
+            if (value == 'logout') {
+              await FirebaseAuth.instance.signOut();
+              if (context.mounted) context.go('/login');
+            }
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(value: 'logout', child: Text('Cerrar Sesión')),
+          ],
         ),
       ],
     );

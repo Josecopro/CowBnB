@@ -11,6 +11,7 @@ import 'pages/create_listing_page.dart';
 import 'pages/explore_page.dart';
 import 'pages/favorites_page.dart';
 import 'pages/messages_page.dart';
+import 'pages/chat_page.dart';
 import 'pages/login_page.dart';
 
 final GoRouter router = GoRouter(
@@ -76,6 +77,14 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/messages',
       builder: (context, state) => const MessagesPage(),
+    ),
+    GoRoute(
+      path: '/chat',
+      builder: (context, state) {
+        final conversationId = state.uri.queryParameters['id'] ?? '';
+        final title = state.uri.queryParameters['title'] ?? 'Chat';
+        return ChatPage(conversationId: conversationId, conversationTitle: title);
+      },
     ),
   ],
 );

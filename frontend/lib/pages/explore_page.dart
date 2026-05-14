@@ -85,11 +85,8 @@ class _ExplorePageState extends State<ExplorePage> {
         }
 
         final statusValue = listing['status']?.toString().toLowerCase();
-        final isActiveStatus = statusValue == null || statusValue == 'active';
-        if (!isActiveStatus) return false;
-
-        // Available filter (kept for UX toggle)
-        bool matchesAvailable = !isAvailable || isActiveStatus;
+        bool matchesAvailable = !isAvailable || statusValue == null || statusValue == 'active';
+        if (!matchesAvailable) return false;
         
         // Riego (Irrigation)
         bool matchesIrrigation = !hasIrrigation || (listing['irrigation']?.toString().toLowerCase() == 'completo') || amenitiesHas('riego');

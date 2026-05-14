@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
 import '../design_tokens.dart';
 import '../components/app_components.dart';
 import '../config/app_config.dart';
@@ -254,7 +253,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
             const SizedBox(width: AppSpacing.md),
             Expanded(
                 child: AppInput(
-                    label: 'Precio por Día',
+                    label: 'Precio por Mes',
                     hint: '\$2,500,000',
                     controller: priceController,
                     keyboardType: TextInputType.number)),

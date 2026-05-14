@@ -112,12 +112,7 @@ class _MessagesPageState extends State<MessagesPage> {
                 final _ConversationItem item = conversations[index];
                 return GestureDetector(
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Abriendo chat con ${item.name}'),
-                        duration: const Duration(seconds: 1),
-                      ),
-                    );
+                    context.push('/chat?id=conv_${index}&title=${Uri.encodeComponent(item.name)}');
                   },
                   child: Container(
                     padding: const EdgeInsets.all(AppSpacing.md),

@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase-admin/firestore";
+
 export type UserRole = "owner" | "renter";
 
 export type UserProfile = {
@@ -8,8 +10,8 @@ export type UserProfile = {
   role: UserRole;
   current_month_earnings?: number;
   total_views?: number;
-  created_at: FirebaseFirestore.Timestamp;
-  updated_at: FirebaseFirestore.Timestamp;
+  created_at: Timestamp;
+  updated_at: Timestamp;
 };
 
 export type UpsertProfilePayload = {

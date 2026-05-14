@@ -17,4 +17,16 @@ export interface ListingData {
   views?: number;
   rating?: number;
   reviewCount?: number;
+  location?: {
+    city?: string;
+    country?: string;
+    address?: string;
+    lat?: number;
+    lng?: number;
+  };
+  irrigation?: string;
+  soil_type?: string;
+  crops?: string;
+  amenities?: string[];
+  totalArea?: number;
 }

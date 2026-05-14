@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../design_tokens.dart';
 import '../components/app_components.dart';
 import '../components/notifications_modal.dart';
-import '../components/optimized_network_image.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
 
@@ -49,7 +49,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
     try {
       final listings = await ListingService().getMyListings();
       try {
-        final profile = await AuthService().getProfile();
+        final profile = await authService.getProfile();
         if(profile != null) currentEarn = profile.currentMonthEarnings ?? 0;
       } catch (e) {}
       if (!mounted) return;
@@ -327,9 +327,20 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
             notifications: notifications,
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-          child: _buildProfileAvatar(),
+        PopupMenuButton<String>(
+          icon: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: _buildProfileAvatar(),
+          ),
+          onSelected: (value) async {
+            if (value == 'logout') {
+              await FirebaseAuth.instance.signOut();
+              if (context.mounted) context.go('/login');
+            }
+          },
+          itemBuilder: (context) => [
+            const PopupMenuItem(value: 'logout', child: Text('Cerrar Sesión')),
+          ],
         ),
       ],
     );

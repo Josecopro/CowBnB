@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { AppVariables } from "../../app_types";
 import { auth_middleware } from "../../middleware/auth_middleware";
-import { auth_repository } from "./auth_repository";
 import { db } from "../../config/firebase_admin";
 import { FieldValue } from "firebase-admin/firestore";
 

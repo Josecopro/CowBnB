@@ -44,7 +44,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
         allListings = activeListings;
       });
     } catch (e) {
-      debugPrint('Error loading listings: \$e');
+      debugPrint('Error loading listings: $e');
     }
   }
 

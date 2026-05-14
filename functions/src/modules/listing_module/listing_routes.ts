@@ -128,6 +128,23 @@ listing_routes.post("/:id/complete", async (c) => {
   }
 });
 
+listing_routes.patch("/:id", async (c) => {
+  try {
+    const id = c.req.param("id");
+    const uid = c.get("user_uid");
+    if (!uid) return c.json({ error: "Unauthorized" }, 401);
+
+    const body = await c.req.json();
+    await service.updateListing(id, uid, body);
+    return c.json({ success: true }, 200);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "unknown_error";
+    if (message === "listing_not_found") return c.json({ error: message }, 404);
+    if (message === "forbidden") return c.json({ error: message }, 403);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
+
 listing_routes.patch("/:id/status", async (c) => {
   try {
     const id = c.req.param("id");

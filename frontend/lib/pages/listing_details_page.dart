@@ -5,6 +5,7 @@ import '../design_tokens.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
 import '../services/listing_service.dart';
+import '../services/auth_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ListingDetailsPage extends StatefulWidget {
@@ -20,6 +21,52 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
   late PageController _pageController;
   Timer? _carouselTimer;
   int _currentPage = 0;
+  bool _isFavorited = false;
+  final AuthService _authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+    _checkFavorite();
+
+    if (widget.listing['id'] != null) {
+      ListingService().recordView(widget.listing['id']);
+    }
+
+    final images = _getImagesUrls();
+    if (images.length > 1) {
+      _startCarouselTimer(images);
+    }
+  }
+
+  Future<void> _checkFavorite() async {
+    final favs = await _authService.getFavorites();
+    if (!mounted) return;
+    final ids = favs.map((f) => f['id']?.toString()).toSet();
+    setState(() {
+      _isFavorited = widget.listing['id'] != null && ids.contains(widget.listing['id'].toString());
+    });
+  }
+
+  Future<void> _toggleFavorite() async {
+    final id = widget.listing['id']?.toString();
+    if (id == null) return;
+    try {
+      if (_isFavorited) {
+        await _authService.removeFavorite(id);
+      } else {
+        await _authService.addFavorite(id);
+      }
+      if (mounted) setState(() => _isFavorited = !_isFavorited);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al actualizar favorito')),
+        );
+      }
+    }
+  }
 
   void _startCarouselTimer(List<String> images) {
     _carouselTimer?.cancel();
@@ -33,21 +80,6 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
         );
       }
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController = PageController();
-
-    if (widget.listing['id'] != null) {
-      ListingService().recordView(widget.listing['id']);
-    }
-
-    final images = _getImagesUrls();
-    if (images.length > 1) {
-      _startCarouselTimer(images);
-    }
   }
 
   @override
@@ -177,18 +209,17 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                   top: 16,
                   right: 16,
                   child: isOwner ? _buildStatusChip() : GestureDetector(
-                    onTap: () {
-                        // TODO: Implement real favorites
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Guardado en favoritos')));
-                    },
+                    onTap: _toggleFavorite,
                     child: Container(
                       padding: const EdgeInsets.all(AppSpacing.sm),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.9),
                         borderRadius: BorderRadius.circular(AppRadius.md),
                       ),
-                      child: const Icon(Icons.favorite_border,
-                          color: AppColors.primary),
+                      child: Icon(
+                        _isFavorited ? Icons.favorite : Icons.favorite_border,
+                        color: _isFavorited ? Colors.red : AppColors.primary,
+                      ),
                     ),
                   ),
                 ),
@@ -329,9 +360,17 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                                 IconButton(
                                   icon: const Icon(Icons.delete_outline, color: Colors.red),
                                   onPressed: () async {
-                                    await ListingService().deleteListing(widget.listing['id']);
-                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Propiedad eliminada')));
-                                    context.pop(true);
+                                    try {
+                                      await ListingService().deleteListing(widget.listing['id']);
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Propiedad eliminada')));
+                                        context.pop(true);
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo eliminar la propiedad')));
+                                      }
+                                    }
                                   }
                                 ),
                               const SizedBox(width: 8),

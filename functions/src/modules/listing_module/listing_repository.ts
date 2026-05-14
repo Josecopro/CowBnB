@@ -36,6 +36,10 @@ export class ListingRepository {
     return snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as ListingData) }));
   }
 
+  async updateListing(id: string, data: Partial<ListingData>): Promise<void> {
+    await db.collection("listings").doc(id).update(data);
+  }
+
   async uploadImageBase64(base64Str: string, ext: string): Promise<string> {
     // Assuming base64Str does NOT contain "data:image/jpeg;base64," prefix.
     const fileBuffer = Buffer.from(base64Str, "base64");

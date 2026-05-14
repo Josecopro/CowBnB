@@ -1,7 +1,8 @@
 import { ListingRepository } from "./listing_repository";
 import { ListingData } from "./listing_types";
+import { db } from "../../config/firebase_admin";
+import { FieldValue } from "firebase-admin/firestore";
 
-import * as admin from 'firebase-admin';
 export class ListingService {
 
   async bookListing(
@@ -11,7 +12,7 @@ export class ListingService {
     rentStart?: string,
     rentEnd?: string
   ): Promise<void> {
-    const listingRef = admin.firestore().collection("listings").doc(listingId);
+    const listingRef = db.collection("listings").doc(listingId);
     const snapshot = await listingRef.get();
     if (!snapshot.exists) {
       throw new Error("listing_not_found");
@@ -36,9 +37,9 @@ export class ListingService {
     });
 
     if (listing.ownerId) {
-      await admin.firestore().collection("user_profiles").doc(listing.ownerId).set(
+      await db.collection("user_profiles").doc(listing.ownerId).set(
         {
-          current_month_earnings: admin.firestore.FieldValue.increment(total),
+          current_month_earnings: FieldValue.increment(total),
         },
         { merge: true }
       );
@@ -46,7 +47,7 @@ export class ListingService {
   }
 
   async updateListingStatus(listingId: string, status: string, ownerId: string): Promise<void> {
-    const listingRef = admin.firestore().collection("listings").doc(listingId);
+    const listingRef = db.collection("listings").doc(listingId);
     const snapshot = await listingRef.get();
     if (!snapshot.exists) {
       throw new Error("listing_not_found");
@@ -68,11 +69,11 @@ export class ListingService {
     if (status === "active") {
       await listingRef.update({
         status,
-        renterId: admin.firestore.FieldValue.delete(),
-        rentedAt: admin.firestore.FieldValue.delete(),
-        rentStart: admin.firestore.FieldValue.delete(),
-        rentEnd: admin.firestore.FieldValue.delete(),
-        bookingTotal: admin.firestore.FieldValue.delete(),
+        renterId: FieldValue.delete(),
+        rentedAt: FieldValue.delete(),
+        rentStart: FieldValue.delete(),
+        rentEnd: FieldValue.delete(),
+        bookingTotal: FieldValue.delete(),
       });
       return;
     }
@@ -80,8 +81,24 @@ export class ListingService {
     await listingRef.update({ status });
   }
 
+  async updateListing(
+    listingId: string,
+    ownerId: string,
+    data: Partial<ListingData>
+  ): Promise<void> {
+    const doc = await db.collection("listings").doc(listingId).get();
+    const listing = doc.data() as ListingData | undefined;
+    if (!listing) {
+      throw new Error("listing_not_found");
+    }
+    if (listing.ownerId !== ownerId) {
+      throw new Error("forbidden");
+    }
+    await this.repository.updateListing(listingId, data);
+  }
+
   async deleteListing(listingId: string, ownerId: string): Promise<void> {
-    const doc = await admin.firestore().collection("listings").doc(listingId).get();
+    const doc = await db.collection("listings").doc(listingId).get();
     const listing = doc.data() as ListingData | undefined;
     if (!listing) {
       throw new Error("listing_not_found");
@@ -92,11 +109,11 @@ export class ListingService {
     if ((listing.status ?? "active") === "rented") {
       throw new Error("listing_rented");
     }
-    await admin.firestore().collection("listings").doc(listingId).delete();
+    await db.collection("listings").doc(listingId).delete();
   }
 
   async completeRental(listingId: string, renterId: string): Promise<void> {
-    const listingRef = admin.firestore().collection("listings").doc(listingId);
+    const listingRef = db.collection("listings").doc(listingId);
     const snapshot = await listingRef.get();
     if (!snapshot.exists) {
       throw new Error("listing_not_found");
@@ -154,12 +171,12 @@ export class ListingService {
 
   async incrementViews(id: string) {
     await this.repository.incrementViews(id);
-    const listingSnapshot = await admin.firestore().collection("listings").doc(id).get();
+    const listingSnapshot = await db.collection("listings").doc(id).get();
     const listing = listingSnapshot.data() as ListingData | undefined;
     if (listing?.ownerId) {
-      await admin.firestore().collection("user_profiles").doc(listing.ownerId).set(
+      await db.collection("user_profiles").doc(listing.ownerId).set(
         {
-          total_views: admin.firestore.FieldValue.increment(1),
+          total_views: FieldValue.increment(1),
         },
         { merge: true }
       );
