@@ -4,6 +4,7 @@ import { cors } from "hono/cors";
 import { auth_routes } from "./modules/auth_module";
 import { favorites_routes } from "./modules/auth_module/favorites_routes";
 import { listing_routes } from "./modules/listing_module";
+import { reservation_routes } from "./modules/reservation_module";
 import { AppVariables } from "./app_types";
 
 const app = new Hono<{ Variables: AppVariables }>();
@@ -22,5 +23,6 @@ app.get("/api/health", (c) => c.json({ status: "ok" }));
 app.route("/api/auth", auth_routes);
 app.route("/api/favorites", favorites_routes);
 app.route("/api/listings", listing_routes);
+app.route("/api/reservations", reservation_routes);
 
 export { app };

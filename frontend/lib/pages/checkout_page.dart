@@ -6,6 +6,8 @@ import '../components/app_components.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
 import '../services/listing_service.dart';
+import '../services/reservation_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class CheckoutPage extends StatefulWidget {
   final Map<String, dynamic> listing;
@@ -293,12 +295,33 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       );
                       return;
                     }
+                    if (startDate == null || endDate == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Selecciona las fechas de reserva.')),
+                      );
+                      return;
+                    }
                     try {
-                      await ListingService().bookListing(
-                        listingId,
-                        total,
-                        rentStart: startDate,
-                        rentEnd: endDate,
+                      final user = FirebaseAuth.instance.currentUser;
+                      final displayName = user?.displayName ?? user?.email ?? 'Usuario';
+                      final images = widget.listing['images'] as List<dynamic>?;
+                      final image = (images != null && images.isNotEmpty)
+                          ? images.first.toString()
+                          : '';
+                      await ReservationService().createReservation(
+                        listingId: listingId,
+                        listingTitle: widget.listing['title']?.toString() ?? 'Sin título',
+                        listingImage: image,
+                        ownerId: widget.listing['ownerId']?.toString() ?? '',
+                        ownerName: '',
+                        startDate: startDate!.toIso8601String(),
+                        endDate: endDate!.toIso8601String(),
+                        months: months,
+                        monthlyPrice: monthlyPrice,
+                        maintenanceMonthly: maintenanceMonthly,
+                        taxes: taxes,
+                        total: total,
+                        renterName: displayName,
                       );
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -309,7 +332,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       context.go('/renter');
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('No se pudo confirmar la reserva.')),
+                        SnackBar(content: Text('No se pudo confirmar la reserva: $e')),
                       );
                     }
                   },

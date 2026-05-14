@@ -8,6 +8,7 @@ import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
+import '../services/reservation_service.dart';
 
 class DashboardRenterPage extends StatefulWidget {
   const DashboardRenterPage({Key? key}) : super(key: key);
@@ -35,28 +36,28 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
   final AuthService authService = AuthService();
   UserProfile? profile;
   bool isLoadingProfile = true;
-  List<dynamic> allListings = [];
+  List<dynamic> reservations = [];
+  bool isLoadingReservations = true;
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
-    _loadListings();
+    _loadReservations();
   }
 
-  Future<void> _loadListings() async {
+  Future<void> _loadReservations() async {
     try {
-      final listings = await ListingService().getMyReservations();
-      final activeReservations = listings.where((listing) {
-        final status = listing['status']?.toString().toLowerCase() ?? 'active';
-        return status == 'rented';
-      }).toList();
+      final data = await ReservationService().getMyReservations();
       if (!mounted) return;
       setState(() {
-        allListings = activeReservations;
+        reservations = data;
+        isLoadingReservations = false;
       });
     } catch (e) {
-      debugPrint('Error loading listings: $e');
+      debugPrint('Error loading reservations: $e');
+      if (!mounted) return;
+      setState(() => isLoadingReservations = false);
     }
   }
 
@@ -222,7 +223,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
   }
 
   Widget _buildStatsGrid() {
-    final reservationCount = allListings.length.toString();
+    final reservationCount = reservations.length.toString();
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -300,7 +301,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
               style: AppTextStyles.headlineSmall,
             ),
             TextButton(
-              onPressed: () {},
+              onPressed: () => context.go('/explore'),
               child: Text(
                 'Ver todas',
                 style: AppTextStyles.label.copyWith(
@@ -311,18 +312,18 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
           ],
         ),
         const SizedBox(height: AppSpacing.md),
-        if (allListings.isEmpty)
+        if (reservations.isEmpty)
           const Padding(
             padding: EdgeInsets.all(AppSpacing.md),
             child: Text('No hay reservas disponibles',
                 style: TextStyle(color: AppColors.textSecondary)),
           )
         else
-          ...allListings.take(2).map((listing) {
+          ...reservations.map((res) {
             return Column(
               children: [
                 _buildBookingCard(
-                  listing: listing as Map<String, dynamic>,
+                  reservation: res as Map<String, dynamic>,
                 ),
                 const SizedBox(height: AppSpacing.md),
               ],
@@ -333,34 +334,47 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
   }
 
   Widget _buildBookingCard({
-    required Map<String, dynamic> listing,
+    required Map<String, dynamic> reservation,
   }) {
-    final title = listing['title']?.toString() ?? 'Sin título';
+    final title = reservation['listingTitle']?.toString() ?? 'Sin título';
+    final image = reservation['listingImage']?.toString() ?? 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
 
-    String locStr = 'Ubicación no especificada';
-    if (listing['location'] is Map) {
-      final city = listing['location']['city'];
-      final country = listing['location']['country'];
-      if (city != null && country != null) {
-        locStr = "$city, $country";
-      }
-    } else if (listing['location'] != null) {
-      locStr = listing['location'].toString();
+    final statusValue = reservation['status']?.toString().toLowerCase() ?? 'confirmed';
+    String statusText;
+    Color statusColor;
+    switch (statusValue) {
+      case 'pending':
+        statusText = 'Pendiente';
+        statusColor = AppColors.warning;
+        break;
+      case 'confirmed':
+        statusText = 'Confirmado';
+        statusColor = AppColors.success;
+        break;
+      case 'active':
+        statusText = 'Activo';
+        statusColor = Colors.blue;
+        break;
+      case 'completed':
+        statusText = 'Completado';
+        statusColor = AppColors.textSecondary;
+        break;
+      case 'cancelled':
+        statusText = 'Cancelado';
+        statusColor = AppColors.error;
+        break;
+      default:
+        statusText = statusValue;
+        statusColor = AppColors.textSecondary;
     }
 
-    final images = listing['images'] as List<dynamic>?;
-    final image = (images != null && images.isNotEmpty)
-        ? images.first.toString()
-        : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
-
-    final location = "$locStr • ${listing['totalArea'] ?? '0'} Hectáreas";
-    final statusValue = listing['status']?.toString().toLowerCase() ?? 'rented';
-    final status = statusValue == 'rented' ? 'Arrendado' : 'Confirmado';
-    final dates = _formatDateRange(listing['rentStart'], listing['rentEnd']);
-    final price = '\$${listing['price'] ?? 0}/mes';
+    final dates = _formatDateRange(reservation['startDate'], reservation['endDate']);
+    final price = '\$${reservation['monthlyPrice'] ?? 0}/mes';
+    final months = reservation['months'] ?? 1;
+    final total = reservation['total'] ?? 0;
 
     return GestureDetector(
-      onTap: () => context.push('/listing', extra: listing),
+      onTap: () => context.push('/listing', extra: {'id': reservation['listingId']}),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -401,9 +415,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                       Expanded(
                         child: Text(
                           title,
-                          style: AppTextStyles.label.copyWith(
-                            fontSize: 16,
-                          ),
+                          style: AppTextStyles.label.copyWith(fontSize: 16),
                         ),
                       ),
                       Container(
@@ -412,17 +424,13 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                            color: statusValue == 'rented'
-                              ? AppColors.success.withOpacity(0.15)
-                              : AppColors.warning.withOpacity(0.15),
+                          color: statusColor.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          status,
+                          statusText,
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: statusValue == 'rented'
-                                ? AppColors.success
-                                : AppColors.warning,
+                            color: statusColor,
                             fontSize: 10,
                           ),
                         ),
@@ -431,7 +439,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    location,
+                    '$months mes(es) • Total: \$$total',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -442,9 +450,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                     children: [
                       Text(
                         dates,
-                        style: AppTextStyles.labelSmall.copyWith(
-                          fontSize: 12,
-                        ),
+                        style: AppTextStyles.labelSmall.copyWith(fontSize: 12),
                       ),
                       Text(
                         price,
@@ -454,6 +460,40 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                       ),
                     ],
                   ),
+                  if (statusValue == 'confirmed' || statusValue == 'active') ...[
+                    const SizedBox(height: AppSpacing.sm),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        if (statusValue == 'active')
+                          TextButton(
+                            onPressed: () async {
+                              try {
+                                await ReservationService().updateStatus(
+                                  reservation['id'].toString(),
+                                  'completed',
+                                );
+                                _loadReservations();
+                              } catch (_) {}
+                            },
+                            child: const Text('Finalizar', style: TextStyle(color: AppColors.primary, fontSize: 12)),
+                          ),
+                        const SizedBox(width: 8),
+                        TextButton(
+                          onPressed: () async {
+                            try {
+                              await ReservationService().updateStatus(
+                                reservation['id'].toString(),
+                                'cancelled',
+                              );
+                              _loadReservations();
+                            } catch (_) {}
+                          },
+                          child: const Text('Cancelar', style: TextStyle(color: AppColors.error, fontSize: 12)),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

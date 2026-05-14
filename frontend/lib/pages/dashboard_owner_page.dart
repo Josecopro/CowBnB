@@ -7,6 +7,7 @@ import '../components/optimized_network_image.dart';
 import '../components/notifications_modal.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
+import '../services/reservation_service.dart';
 
 class DashboardOwnerPage extends StatefulWidget {
   const DashboardOwnerPage({Key? key}) : super(key: key);
@@ -37,6 +38,8 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
 
   bool isLoadingListings = true;
   List<dynamic> myListings = [];
+  List<dynamic> myReservations = [];
+  bool isLoadingReservations = true;
   num currentEarn = 0;
 
   @override
@@ -44,6 +47,21 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
     super.initState();
     _loadProfile();
     _loadListings();
+    _loadReservations();
+  }
+
+  Future<void> _loadReservations() async {
+    try {
+      final data = await ReservationService().getOwnerReservations();
+      if (!mounted) return;
+      setState(() {
+        myReservations = data;
+        isLoadingReservations = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => isLoadingReservations = false);
+    }
   }
 
   Future<void> _loadListings() async {
@@ -261,9 +279,9 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                     style: AppTextStyles.headlineSmall,
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: () => context.go('/explore'),
                     child: Text(
-                      'Ver todas',
+                      'Explorar',
                       style: AppTextStyles.label.copyWith(
                         color: AppColors.primary,
                       ),
@@ -295,9 +313,96 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                   );
                 }),
 
+              const SizedBox(height: AppSpacing.lg),
+
+              // Reservations Section
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Reservas Recibidas',
+                    style: AppTextStyles.headlineSmall,
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              if (isLoadingReservations)
+                const Center(child: Padding(
+                  padding: EdgeInsets.all(AppSpacing.lg),
+                  child: CircularProgressIndicator(),
+                ))
+              else if (myReservations.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(AppSpacing.md),
+                  child: Text('No hay reservas aún.', style: TextStyle(color: AppColors.textSecondary)),
+                )
+              else
+                ...myReservations.map((res) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: _buildOwnerReservationCard(res as Map<String, dynamic>),
+                  );
+                }),
+
               const SizedBox(height: 100),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOwnerReservationCard(Map<String, dynamic> reservation) {
+    final title = reservation['listingTitle']?.toString() ?? 'Sin título';
+    final renterName = reservation['renterName']?.toString() ?? 'Arrendatario';
+    final image = reservation['listingImage']?.toString() ?? 'https://placehold.co/400x300.png';
+    final statusValue = reservation['status']?.toString().toLowerCase() ?? 'confirmed';
+    final total = reservation['total'] ?? 0;
+    final months = reservation['months'] ?? 1;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              child: Image.network(image, width: 60, height: 60, fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(width: 60, height: 60, color: Colors.grey[200]),
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: AppTextStyles.label.copyWith(fontSize: 14)),
+                  const SizedBox(height: 2),
+                  Text('$renterName • $months mes(es)', style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                  const SizedBox(height: 2),
+                  Text('\$$total', style: AppTextStyles.label.copyWith(color: AppColors.primary)),
+                  if (statusValue == 'confirmed')
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: () async {
+                          try {
+                            await ReservationService().updateStatus(reservation['id'].toString(), 'cancelled');
+                            _loadReservations();
+                          } catch (_) {}
+                        },
+                        child: const Text('Cancelar', style: TextStyle(color: AppColors.error, fontSize: 12)),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

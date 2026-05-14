@@ -3,14 +3,13 @@ import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 
-if (process.env.APP_AUTH_EMULATOR_HOST) {
-    process.env.FIREBASE_AUTH_EMULATOR_HOST = process.env.APP_AUTH_EMULATOR_HOST;
-}
-if (process.env.APP_FIRESTORE_EMULATOR_HOST) {
-    process.env.FIRESTORE_EMULATOR_HOST = process.env.APP_FIRESTORE_EMULATOR_HOST;
-}
-if (process.env.APP_STORAGE_EMULATOR_HOST) {
-    process.env.FIREBASE_STORAGE_EMULATOR_HOST = process.env.APP_STORAGE_EMULATOR_HOST;
+// The Firebase emulator suite auto-injects FIREBASE_AUTH_EMULATOR_HOST, FIRESTORE_EMULATOR_HOST, etc.
+// These can also come from .env or be hardcoded for local dev.
+const isEmulated = process.env.FUNCTIONS_EMULATOR === "true";
+if (isEmulated) {
+  if (!process.env.FIREBASE_AUTH_EMULATOR_HOST) process.env.FIREBASE_AUTH_EMULATOR_HOST = "localhost:9099";
+  if (!process.env.FIRESTORE_EMULATOR_HOST) process.env.FIRESTORE_EMULATOR_HOST = "localhost:8080";
+  if (!process.env.FIREBASE_STORAGE_EMULATOR_HOST) process.env.FIREBASE_STORAGE_EMULATOR_HOST = "localhost:9199";
 }
 
 const app = getApps().length > 0 ? getApps()[0] : initializeApp({

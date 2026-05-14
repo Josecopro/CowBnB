@@ -24,53 +24,53 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: "demo",
-    appId: "demo",
-    messagingSenderId: "demo",
+    apiKey: "AIzaSyAa8yy0GgGggg1g1g1g1g1g1g1g1g1g1g1",
+    appId: "1:123456789012:web:abcdef1234567890",
+    messagingSenderId: "123456789012",
     projectId: "demo-cowbnb",
     authDomain: "demo-cowbnb.firebaseapp.com",
     storageBucket: "demo-cowbnb.appspot.com",
-    measurementId: "demo",
+    measurementId: "G-XXXXXXXXXX",
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: "demo",
-    appId: "demo",
-    messagingSenderId: "demo",
+    apiKey: "AIzaSyAa8yy0GgGggg1g1g1g1g1g1g1g1g1g1g1",
+    appId: "1:123456789012:android:abcdef1234567890",
+    messagingSenderId: "123456789012",
     projectId: "demo-cowbnb",
     storageBucket: "demo-cowbnb.appspot.com",
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: "demo",
-    appId: "demo",
-    messagingSenderId: "demo",
+    apiKey: "AIzaSyAa8yy0GgGggg1g1g1g1g1g1g1g1g1g1g1",
+    appId: "1:123456789012:ios:abcdef1234567890",
+    messagingSenderId: "123456789012",
     projectId: "demo-cowbnb",
     storageBucket: "demo-cowbnb.appspot.com",
     iosBundleId: "com.example.cowbnb",
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: "demo",
-    appId: "demo",
-    messagingSenderId: "demo",
+    apiKey: "AIzaSyAa8yy0GgGggg1g1g1g1g1g1g1g1g1g1g1",
+    appId: "1:123456789012:macos:abcdef1234567890",
+    messagingSenderId: "123456789012",
     projectId: "demo-cowbnb",
     storageBucket: "demo-cowbnb.appspot.com",
     iosBundleId: "com.example.cowbnb",
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: "demo",
-    appId: "demo",
-    messagingSenderId: "demo",
+    apiKey: "AIzaSyAa8yy0GgGggg1g1g1g1g1g1g1g1g1g1g1",
+    appId: "1:123456789012:windows:abcdef1234567890",
+    messagingSenderId: "123456789012",
     projectId: "demo-cowbnb",
     storageBucket: "demo-cowbnb.appspot.com",
   );
 
   static const FirebaseOptions linux = FirebaseOptions(
-    apiKey: "demo",
-    appId: "demo",
-    messagingSenderId: "demo",
+    apiKey: "AIzaSyAa8yy0GgGggg1g1g1g1g1g1g1g1g1g1g1",
+    appId: "1:123456789012:linux:abcdef1234567890",
+    messagingSenderId: "123456789012",
     projectId: "demo-cowbnb",
     storageBucket: "demo-cowbnb.appspot.com",
   );

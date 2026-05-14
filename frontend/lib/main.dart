@@ -10,20 +10,71 @@ import 'router.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  runApp(const AppBootstrap());
+}
 
-  if (kDebugMode) {
-    FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+class AppBootstrap extends StatefulWidget {
+  const AppBootstrap({Key? key}) : super(key: key);
+
+  @override
+  State<AppBootstrap> createState() => _AppBootstrapState();
+}
+
+class _AppBootstrapState extends State<AppBootstrap> {
+  final Future<String> _initFuture = _initFirebase();
+
+  static Future<String> _initFirebase() async {
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      ).timeout(const Duration(seconds: 10));
+      if (kDebugMode) {
+        FirebaseAuth.instance.useAuthEmulator('localhost', 9099);
+      }
+      PaintingBinding.instance.imageCache.maximumSize = 250;
+      PaintingBinding.instance.imageCache.maximumSizeBytes = 180 << 20;
+      return 'ok';
+    } catch (e) {
+      return 'Firebase init error: $e';
+    }
   }
 
-  // Keep a slightly larger in-memory image cache to avoid frequent re-decodes
-  // while moving between screens with heavy photo content.
-  PaintingBinding.instance.imageCache.maximumSize = 250;
-  PaintingBinding.instance.imageCache.maximumSizeBytes = 180 << 20;
-
-  runApp(const MyApp());
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<String>(
+      future: _initFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: buildAppTheme(),
+            home: const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+        if (snapshot.data != 'ok') {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: buildAppTheme(),
+            home: Scaffold(
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text(
+                    snapshot.data ?? 'Unknown error',
+                    style: const TextStyle(color: Colors.red, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }
+        return const MyApp();
+      },
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {
