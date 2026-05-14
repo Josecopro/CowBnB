@@ -224,7 +224,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               const SizedBox(height: AppSpacing.md),
 
               _buildPriceRow('Mes', '\$${monthlyPrice.toStringAsFixed(0)}', '$months'),
-              _buildPriceRow('Gastos de servicios', '\$${maintenanceTotal.toStringAsFixed(0)}', maintenancePerNight > 0 ? '$nights' : ''),
+              _buildPriceRow('Gastos de servicios', '\$${maintenanceTotal.toStringAsFixed(0)}', maintenanceMonthly > 0 ? '$months' : ''),
               _buildPriceRow('Impuestos', '\$${taxes.toStringAsFixed(0)}', ''),
 
               const SizedBox(height: AppSpacing.md),

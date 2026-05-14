@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../design_tokens.dart';
 import '../components/app_components.dart';
+import '../components/optimized_network_image.dart';
 import '../components/notifications_modal.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
