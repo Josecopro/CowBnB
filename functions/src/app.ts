@@ -21,8 +21,12 @@ app.use(
 
 app.get("/api/health", (c) => c.json({ status: "ok" }));
 app.route("/api/auth", auth_routes);
+app.route("/auth", auth_routes);
 app.route("/api/favorites", favorites_routes);
+app.route("/favorites", favorites_routes);
 app.route("/api/listings", listing_routes);
+app.route("/listings", listing_routes);
 app.route("/api/reservations", reservation_routes);
+app.route("/reservations", reservation_routes);
 
 export { app };
