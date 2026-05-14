@@ -35,9 +35,13 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
   Future<void> _loadListings() async {
     try {
       final listings = await ListingService().getAllListings();
+      final activeListings = listings.where((listing) {
+        final status = listing['status']?.toString().toLowerCase();
+        return status == null || status == 'active';
+      }).toList();
       if (!mounted) return;
       setState(() {
-        allListings = listings;
+        allListings = activeListings;
       });
     } catch (e) {
       debugPrint('Error loading listings: \$e');

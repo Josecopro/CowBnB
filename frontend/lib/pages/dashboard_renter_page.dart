@@ -45,10 +45,14 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
 
   Future<void> _loadListings() async {
     try {
-      final listings = await ListingService().getAllListings();
+      final listings = await ListingService().getMyReservations();
+      final activeReservations = listings.where((listing) {
+        final status = listing['status']?.toString().toLowerCase() ?? 'active';
+        return status == 'rented';
+      }).toList();
       if (!mounted) return;
       setState(() {
-        allListings = listings;
+        allListings = activeReservations;
       });
     } catch (e) {
       debugPrint('Error loading listings: $e');
@@ -206,6 +210,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
   }
 
   Widget _buildStatsGrid() {
+    final reservationCount = allListings.length.toString();
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -217,12 +222,12 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
         _buildStatCard(
           icon: Icons.calendar_month,
           label: 'Reservas Activas',
-          value: '0',
+          value: reservationCount,
         ),
         _buildStatCard(
           icon: Icons.favorite,
           label: 'Favoritos',
-          value: allListings.length.toString(),
+          value: '0',
         ),
         _buildStatCard(
           icon: Icons.message,
@@ -337,8 +342,9 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
         : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
 
     final location = "$locStr • ${listing['totalArea'] ?? '0'} Hectáreas";
-    final status = 'Confirmado';
-    final dates = '15 Oct - 20 Dic';
+    final statusValue = listing['status']?.toString().toLowerCase() ?? 'rented';
+    final status = statusValue == 'rented' ? 'Arrendado' : 'Confirmado';
+    final dates = _formatDateRange(listing['rentStart'], listing['rentEnd']);
     final price = '\$${listing['price'] ?? 0}/mes';
 
     return GestureDetector(
@@ -394,7 +400,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: status == 'Confirmado'
+                            color: statusValue == 'rented'
                               ? AppColors.success.withOpacity(0.15)
                               : AppColors.warning.withOpacity(0.15),
                           borderRadius: BorderRadius.circular(20),
@@ -402,7 +408,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                         child: Text(
                           status,
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: status == 'Confirmado'
+                            color: statusValue == 'rented'
                                 ? AppColors.success
                                 : AppColors.warning,
                             fontSize: 10,
@@ -507,5 +513,20 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
         ),
       ],
     );
+  }
+
+  String _formatDateRange(dynamic start, dynamic end) {
+    final startDate = _parseDate(start);
+    final endDate = _parseDate(end);
+    if (startDate == null || endDate == null) return 'Fechas por confirmar';
+    return '${startDate.day}/${startDate.month} - ${endDate.day}/${endDate.month}';
+  }
+
+  DateTime? _parseDate(dynamic value) {
+    if (value == null) return null;
+    if (value is String) {
+      return DateTime.tryParse(value);
+    }
+    return null;
   }
 }

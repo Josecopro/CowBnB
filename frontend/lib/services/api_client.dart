@@ -46,4 +46,53 @@ class ApiClient {
 
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
+
+
+  Future<Map<String, dynamic>> patchJson(
+    String path, {
+    String? idToken,
+    required Map<String, dynamic> body,
+  }) async {
+    final uri = Uri.parse('$baseUrl$path');
+    final headers = {
+      'Content-Type': 'application/json',
+      if (idToken != null) 'Authorization': 'Bearer $idToken',
+    };
+
+    final response = await http.patch(
+      uri,
+      headers: headers,
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isEmpty) return {};
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw Exception('HTTP Error ${response.statusCode}: ${response.body}');
+    }
+  }
+
+  Future<Map<String, dynamic>> delete(
+    String path, {
+    String? idToken,
+  }) async {
+    final uri = Uri.parse('$baseUrl$path');
+    final headers = {
+      if (idToken != null) 'Authorization': 'Bearer $idToken',
+    };
+
+    final response = await http.delete(
+      uri,
+      headers: headers,
+    );
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isEmpty) return {};
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    } else {
+      throw Exception('HTTP Error ${response.statusCode}: ${response.body}');
+    }
+  }
+
 }

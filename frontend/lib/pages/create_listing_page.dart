@@ -26,6 +26,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
   late TextEditingController titleController;
   late TextEditingController descriptionController;
   late TextEditingController priceController;
+  late TextEditingController maintenanceController;
   late TextEditingController sizeController;
   final Set<String> selectedFeatures = <String>{};
 
@@ -50,6 +51,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
     titleController = TextEditingController();
     descriptionController = TextEditingController();
     priceController = TextEditingController();
+    maintenanceController = TextEditingController();
     sizeController = TextEditingController();
   }
 
@@ -58,6 +60,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
     titleController.dispose();
     descriptionController.dispose();
     priceController.dispose();
+    maintenanceController.dispose();
     sizeController.dispose();
     super.dispose();
   }
@@ -85,6 +88,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
   Future<void> _submitListing() async {
     if (titleController.text.trim().isEmpty ||
         priceController.text.trim().isEmpty ||
+        maintenanceController.text.trim().isEmpty ||
         sizeController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -113,6 +117,8 @@ class _CreateListingPageState extends State<CreateListingPage> {
         description: descriptionController.text.trim(),
         size: num.tryParse(sizeController.text.trim()) ?? 0,
         price: num.tryParse(priceController.text.trim()) ?? 0,
+        maintenanceCost: num.tryParse(maintenanceController.text.trim()) ?? 0,
+        status: "active",
         features: selectedFeatures.toList(),
         imagesBase64: imagesBase64,
       );
@@ -254,8 +260,14 @@ class _CreateListingPageState extends State<CreateListingPage> {
                     keyboardType: TextInputType.number)),
           ],
         ),
-      ],
-    );
+          const SizedBox(height: AppSpacing.md),
+          AppInput(
+              label: 'Gastos de Servicios',
+              hint: '\$500,000',
+              controller: maintenanceController,
+              keyboardType: TextInputType.number),
+        ],
+      );
   }
 
   Widget _buildStep2() {

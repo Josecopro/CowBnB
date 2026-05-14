@@ -6,6 +6,8 @@ export type UserProfile = {
   display_name: string | null;
   phone_number: string | null;
   role: UserRole;
+  current_month_earnings?: number;
+  total_views?: number;
   created_at: FirebaseFirestore.Timestamp;
   updated_at: FirebaseFirestore.Timestamp;
 };

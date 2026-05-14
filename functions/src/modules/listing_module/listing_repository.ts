@@ -26,6 +26,11 @@ export class ListingRepository {
     return snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as ListingData) }));
   }
 
+  async getListingsByRenter(renterId: string): Promise<(ListingData & { id: string })[]> {
+    const snapshot = await db.collection("listings").where("renterId", "==", renterId).orderBy("createdAt", "desc").get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as ListingData) }));
+  }
+
   async getAllListings(): Promise<(ListingData & { id: string })[]> {
     const snapshot = await db.collection("listings").orderBy("createdAt", "desc").get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as ListingData) }));

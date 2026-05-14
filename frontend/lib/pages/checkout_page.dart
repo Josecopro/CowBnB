@@ -1,9 +1,11 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
 import '../components/app_components.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
+import '../services/listing_service.dart';
 
 class CheckoutPage extends StatefulWidget {
   final Map<String, dynamic> listing;
@@ -25,11 +27,13 @@ class _CheckoutPageState extends State<CheckoutPage> {
       if (nights <= 0) nights = 1;
     }
     
+    const double minTaxes = 1000;
     final int pricePerNight = int.tryParse(widget.listing['price']?.toString() ?? '1200') ?? 1200;
+    final double maintenancePerNight = (widget.listing['maintenanceCost'] as num?)?.toDouble() ?? 0;
     final int subtotal = nights * pricePerNight;
-    final double serviceFee = subtotal * 0.05; // 5% fee
-    final double taxes = subtotal * 0.19; // 19% tax
-    final double total = subtotal + serviceFee + taxes;
+    final double maintenanceTotal = maintenancePerNight * nights;
+    final double taxes = math.max(subtotal * 0.19, minTaxes);
+    final double total = subtotal + maintenanceTotal + taxes;
 
     final String imgUrl = (widget.listing['images'] != null && widget.listing['images'] is List && widget.listing['images'].isNotEmpty)
       ? widget.listing['images'][0].toString()
@@ -219,7 +223,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               const SizedBox(height: AppSpacing.md),
 
               _buildPriceRow('Noche', '\$${pricePerNight.toStringAsFixed(0)}', '$nights'),
-              _buildPriceRow('Gastos de servicio', '\$${serviceFee.toStringAsFixed(0)}', ''),
+              _buildPriceRow('Gastos de servicios', '\$${maintenanceTotal.toStringAsFixed(0)}', maintenancePerNight > 0 ? '$nights' : ''),
               _buildPriceRow('Impuestos', '\$${taxes.toStringAsFixed(0)}', ''),
 
               const SizedBox(height: AppSpacing.md),
@@ -280,14 +284,33 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('¡Reserva confirmada!'),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                    context.go('/renter');
+                  onPressed: () async {
+                    final listingId = widget.listing['id']?.toString();
+                    if (listingId == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No se encontro el anuncio.')),
+                      );
+                      return;
+                    }
+                    try {
+                      await ListingService().bookListing(
+                        listingId,
+                        total,
+                        rentStart: startDate,
+                        rentEnd: endDate,
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('¡Reserva confirmada!'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      context.go('/renter');
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('No se pudo confirmar la reserva.')),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,

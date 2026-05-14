@@ -36,6 +36,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
 
   bool isLoadingListings = true;
   List<dynamic> myListings = [];
+  num currentEarn = 0;
 
   @override
   void initState() {
@@ -47,6 +48,10 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
   Future<void> _loadListings() async {
     try {
       final listings = await ListingService().getMyListings();
+      try {
+        final profile = await AuthService().getProfile();
+        if(profile != null) currentEarn = profile.currentMonthEarnings ?? 0;
+      } catch (e) {}
       if (!mounted) return;
       setState(() {
         myListings = listings;
@@ -71,6 +76,18 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final earnedFromListings = myListings
+        .where((listing) => (listing['status']?.toString().toLowerCase() ?? 'active') == 'rented')
+        .fold<num>(0, (sum, listing) => sum + (listing['bookingTotal'] as num? ?? 0));
+    final profileEarnings = profile?.currentMonthEarnings ?? currentEarn;
+    final resolvedEarnings = profileEarnings > 0 ? profileEarnings : earnedFromListings;
+    final earningsValue = resolvedEarnings.toStringAsFixed(0);
+    final activeCount = myListings.where((listing) {
+      final status = listing['status']?.toString().toLowerCase() ?? 'active';
+      return status == 'rented';
+    }).length;
+    final totalCount = myListings.length;
+    final occupancyRate = totalCount == 0 ? 0 : ((activeCount / totalCount) * 100).round();
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: _buildAppBar(),
@@ -169,7 +186,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      '\$0',
+                      '\$$earningsValue',
                       style: AppTextStyles.headlineLarge.copyWith(
                         color: Colors.white,
                         fontSize: 36,
@@ -177,7 +194,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      '0% (Usuario nuevo)',
+                      '$occupancyRate% ocupacion',
                       style: AppTextStyles.bodySmall.copyWith(
                         color: Colors.white70,
                       ),
@@ -190,7 +207,16 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
 
               // Stats Grid
               (() {
-                final totalViews = myListings.fold<int>(0, (sum, l) => sum + ((l['views'] as num?)?.toInt() ?? 0));
+                final fallbackViews = myListings.fold<int>(0, (sum, l) => sum + ((l['views'] as num?)?.toInt() ?? 0));
+                final totalViews = profile?.totalViews?.toInt() ?? fallbackViews;
+                final rentedListings = myListings.where((listing) {
+                  final status = listing['status']?.toString().toLowerCase() ?? 'active';
+                  return status == 'rented';
+                }).toList();
+                final renterIds = rentedListings
+                    .map((listing) => listing['renterId']?.toString())
+                    .where((id) => id != null && id!.isNotEmpty)
+                    .toSet();
                 return GridView.count(
                   crossAxisCount: 2,
                   shrinkWrap: true,
@@ -207,12 +233,12 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                     _buildStatCard(
                       icon: Icons.check_circle,
                       label: 'Reservas Activas',
-                      value: '0',
+                      value: rentedListings.length.toString(),
                     ),
                     _buildStatCard(
                       icon: Icons.people,
                       label: 'Arrendatarios',
-                      value: '0',
+                      value: renterIds.length.toString(),
                     ),
                     _buildStatCard(
                       icon: Icons.visibility,
@@ -385,10 +411,24 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
 
     final priceVal = listing['price']?.toString() ?? '0';
     final earnings = '\$$priceVal/mes';
-    final status = 'Activo';
+    final statusValue = listing['status']?.toString().toLowerCase() ?? 'active';
+    Color statusColor = AppColors.success;
+    String status = 'Activo';
+    if (statusValue == 'rented') {
+      statusColor = Colors.blue;
+      status = 'Arrendado';
+    } else if (statusValue == 'review') {
+      statusColor = Colors.orange;
+      status = 'En Revisi\u00f3n';
+    }
 
     return GestureDetector(
-      onTap: () => context.push('/listing', extra: listing),
+      onTap: () async {
+        final result = await context.push('/listing', extra: listing);
+        if (result == true) {
+          await _loadListings();
+        }
+      },
       child: Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -422,7 +462,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.9),
+                    color: statusColor.withOpacity(0.9),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -472,6 +512,29 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                     ),
                   ],
                 ),
+                if (statusValue == 'review') ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: OutlinedButton(
+                      onPressed: () async {
+                        await ListingService().updateListingStatus(listing['id'], 'active');
+                        await _loadListings();
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: AppColors.primary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      ),
+                      child: Text(
+                        'Republicar',
+                        style: AppTextStyles.labelSmall.copyWith(color: AppColors.primary),
+                      ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

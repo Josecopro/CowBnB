@@ -21,6 +21,8 @@ export const auth_repository = {
         display_name: payload.display_name ?? null,
         phone_number: payload.phone_number ?? null,
         role: payload.role,
+        current_month_earnings: FieldValue.increment(0),
+        total_views: FieldValue.increment(0),
         updated_at: now,
         created_at: now,
       },

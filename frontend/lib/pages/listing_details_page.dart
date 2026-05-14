@@ -5,6 +5,7 @@ import '../design_tokens.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
 import '../services/listing_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ListingDetailsPage extends StatefulWidget {
   final Map<String, dynamic> listing;
@@ -135,6 +136,12 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final isOwner = currentUid != null && currentUid == widget.listing['ownerId'];
+    final statusValue = widget.listing['status']?.toString().toLowerCase() ?? 'active';
+    final isRented = statusValue == 'rented';
+    final isReview = statusValue == 'review';
+    final isRenter = currentUid != null && currentUid == widget.listing['renterId'];
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SingleChildScrollView(
@@ -169,14 +176,20 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                 Positioned(
                   top: 16,
                   right: 16,
-                  child: Container(
-                    padding: const EdgeInsets.all(AppSpacing.sm),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      borderRadius: BorderRadius.circular(AppRadius.md),
+                  child: isOwner ? _buildStatusChip() : GestureDetector(
+                    onTap: () {
+                        // TODO: Implement real favorites
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Guardado en favoritos')));
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(AppSpacing.sm),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                      ),
+                      child: const Icon(Icons.favorite_border,
+                          color: AppColors.primary),
                     ),
-                    child: const Icon(Icons.favorite_border,
-                        color: AppColors.primary),
                   ),
                 ),
               ],
@@ -257,7 +270,7 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    widget.listing['description']?.toString() ?? 'Este terreno ofrece 12 hectareas de tierra fertil con sistemas de riego modernos. Ideal para cultivos intensivos y ganaderia sostenible.',
+                    widget.listing['description']?.toString() ?? 'La propiedad no tiene una descripción detallada.',
                     style: AppTextStyles.body
                         .copyWith(color: AppColors.textSecondary),
                   ),
@@ -279,14 +292,10 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                     style: AppTextStyles.label.copyWith(fontSize: 16),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  if (widget.listing['amenities'] != null && widget.listing['amenities'] is List)
-                    ...((widget.listing['amenities'] as List).map((a) => _buildAmenity(a.toString())))
-                  else ...[
-                    _buildAmenity('Riego por goteo automatico'),
-                    _buildAmenity('Caminos de acceso pavimentados'),
-                    _buildAmenity('Energia electrica disponible'),
-                    _buildAmenity('Certificacion organica'),
-                  ],
+                  if (widget.listing['features'] != null && widget.listing['features'] is List && (widget.listing['features'] as List).isNotEmpty)
+                    ...((widget.listing['features'] as List).map((a) => _buildAmenity(a.toString())))
+                  else 
+                    Text('La propiedad no describe caracteristicas', style: AppTextStyles.body.copyWith(color: AppColors.textSecondary)),
                   const SizedBox(height: AppSpacing.lg),
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.md),
@@ -313,25 +322,100 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                             ),
                           ],
                         ),
-                        SizedBox(
-                          width: 120,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: () => context.push('/checkout', extra: widget.listing),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(AppRadius.lg),
+                        if(isOwner) ...[
+                          Row(
+                            children: [
+                              if (!isRented)
+                                IconButton(
+                                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                  onPressed: () async {
+                                    await ListingService().deleteListing(widget.listing['id']);
+                                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Propiedad eliminada')));
+                                    context.pop(true);
+                                  }
+                                ),
+                              const SizedBox(width: 8),
+                              if (!isRented)
+                                SizedBox(
+                                  width: 140,
+                                  height: 50,
+                                  child: OutlinedButton(
+                                    onPressed: () async {
+                                      final nextStatus = isReview ? 'active' : 'review';
+                                      await ListingService().updateListingStatus(widget.listing['id'], nextStatus);
+                                      if (mounted) {
+                                        setState(() {
+                                          widget.listing['status'] = nextStatus;
+                                        });
+                                      }
+                                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(isReview ? 'Publicado de nuevo' : 'Cambiado a revisión')));
+                                      context.pop(true);
+                                    },
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(color: AppColors.primary),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      isReview ? 'Publicar' : 'A Revisión',
+                                      style: AppTextStyles.label.copyWith(color: AppColors.primary),
+                                    ),
+                                  ),
+                                )
+                            ]
+                          )
+                        ] else if (isRenter && isRented)
+                          SizedBox(
+                            width: 160,
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                await ListingService().completeRental(widget.listing['id']);
+                                if (mounted) {
+                                  setState(() {
+                                    widget.listing['status'] = 'review';
+                                  });
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Arriendo finalizado. Queda en revisión.')),
+                                );
+                                context.pop(true);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(AppRadius.lg),
+                                ),
+                              ),
+                              child: Text(
+                                'Finalizar arriendo',
+                                style: AppTextStyles.label
+                                    .copyWith(color: Colors.white),
                               ),
                             ),
-                            child: Text(
-                              'Reservar',
-                              style: AppTextStyles.label
-                                  .copyWith(color: Colors.white),
+                          )
+                        else if (!isRented && !isReview)
+                          SizedBox(
+                            width: 120,
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: () => context.push('/checkout', extra: widget.listing),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(AppRadius.lg),
+                                ),
+                              ),
+                              child: Text(
+                                'Reservar',
+                                style: AppTextStyles.label
+                                    .copyWith(color: Colors.white),
+                              ),
                             ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -372,6 +456,32 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
           const SizedBox(height: 4),
           Text(value, style: AppTextStyles.label),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatusChip() {
+    final status = widget.listing['status']?.toString().toLowerCase() ?? 'active';
+    Color color = AppColors.success;
+    String text = 'Activo';
+    
+    if (status == 'rented') {
+      color = Colors.blue;
+      text = 'Arrendado';
+    } else if (status == 'review') {
+      color = Colors.orange;
+      text = 'En Revisión';
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
       ),
     );
   }
