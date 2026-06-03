@@ -104,7 +104,7 @@ class _MessagesPageState extends State<MessagesPage> {
             notifications: _notifications.map((n) => n.toLegacy()).toList(),
             onPressed: () => showNotificationsModal(
               context,
-              notifications: _notifications.map((n) => n.toLegacy()).toList(),
+              notifications: _notifications,
               notificationService: _notificationService,
             ),
           ),

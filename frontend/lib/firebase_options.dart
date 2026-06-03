@@ -30,6 +30,7 @@ class DefaultFirebaseOptions {
     projectId: "demo-cowbnb",
     authDomain: "demo-cowbnb.firebaseapp.com",
     storageBucket: "demo-cowbnb.appspot.com",
+    databaseURL: "https://demo-cowbnb-default-rtdb.firebaseio.com",
     measurementId: "G-XXXXXXXXXX",
   );
 
@@ -39,6 +40,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: "123456789012",
     projectId: "demo-cowbnb",
     storageBucket: "demo-cowbnb.appspot.com",
+    databaseURL: "https://demo-cowbnb-default-rtdb.firebaseio.com",
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -47,6 +49,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: "123456789012",
     projectId: "demo-cowbnb",
     storageBucket: "demo-cowbnb.appspot.com",
+    databaseURL: "https://demo-cowbnb-default-rtdb.firebaseio.com",
     iosBundleId: "com.example.cowbnb",
   );
 
@@ -56,6 +59,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: "123456789012",
     projectId: "demo-cowbnb",
     storageBucket: "demo-cowbnb.appspot.com",
+    databaseURL: "https://demo-cowbnb-default-rtdb.firebaseio.com",
     iosBundleId: "com.example.cowbnb",
   );
 
@@ -65,6 +69,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: "123456789012",
     projectId: "demo-cowbnb",
     storageBucket: "demo-cowbnb.appspot.com",
+    databaseURL: "https://demo-cowbnb-default-rtdb.firebaseio.com",
   );
 
   static const FirebaseOptions linux = FirebaseOptions(
@@ -73,5 +78,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: "123456789012",
     projectId: "demo-cowbnb",
     storageBucket: "demo-cowbnb.appspot.com",
+    databaseURL: "https://demo-cowbnb-default-rtdb.firebaseio.com",
   );
 }

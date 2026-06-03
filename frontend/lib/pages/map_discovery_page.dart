@@ -5,6 +5,7 @@ import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
 import '../services/listing_service.dart';
+import '../services/notification_service.dart';
 import 'dart:math';
 
 class MapDiscoveryPage extends StatefulWidget {
@@ -23,6 +24,21 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
       icon: Icons.travel_explore,
     ),
   ];
+
+  List<AppNotificationData> get _notificationData {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    return notifications.map((n) {
+      return AppNotificationData(
+        id: 'local-${n.title.hashCode}',
+        type: 'system',
+        title: n.title,
+        description: n.description,
+        timestamp: now,
+        read: n.isRead,
+        icon: n.icon,
+      );
+    }).toList();
+  }
 
   List<dynamic> allListings = [];
 
@@ -334,7 +350,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
           notifications: notifications,
           onPressed: () => showNotificationsModal(
             context,
-            notifications: notifications,
+            notifications: _notificationData,
           ),
         ),
       ],

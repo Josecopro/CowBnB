@@ -13,7 +13,7 @@
     },
     "conversations": {
       "$conversationId": {
-        ".read": "auth !== null && data.child('participants').val().includes(auth.uid)",
+        ".read": "auth !== null",
         ".write": "auth !== null"
       }
     },

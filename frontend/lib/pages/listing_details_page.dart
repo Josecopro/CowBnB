@@ -6,14 +6,18 @@ import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
 import '../services/listing_service.dart';
 import '../services/auth_service.dart';
-import '../services/reservation_service.dart';
 import '../services/chat_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ListingDetailsPage extends StatefulWidget {
   final Map<String, dynamic> listing;
+  final bool isReservationView;
 
-  const ListingDetailsPage({super.key, required this.listing});
+  const ListingDetailsPage({
+    super.key,
+    required this.listing,
+    this.isReservationView = false,
+  });
 
   @override
   State<ListingDetailsPage> createState() => _ListingDetailsPageState();
@@ -24,7 +28,7 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
   Timer? _carouselTimer;
   int _currentPage = 0;
   bool _isFavorited = false;
-  bool _hasBooking = false;
+  String? _existingConversationId;
   final AuthService _authService = AuthService();
   final ChatService _chatService = ChatService();
 
@@ -33,7 +37,7 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
     super.initState();
     _pageController = PageController();
     _checkFavorite();
-    _checkBooking();
+    _loadExistingConversation();
 
     if (widget.listing['id'] != null) {
       ListingService().recordView(widget.listing['id']);
@@ -45,34 +49,20 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
     }
   }
 
-  Future<void> _checkBooking() async {
+  Future<void> _loadExistingConversation() async {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUid == null) return;
-    final listingId = widget.listing['id']?.toString();
-    if (listingId == null) return;
+    final ownerId = widget.listing['ownerId']?.toString();
+    if (currentUid == null || ownerId == null || currentUid == ownerId) return;
+
     try {
-      final renterReservations = await ReservationService().getMyReservations();
-      bool hasBooking = renterReservations.any((r) {
-        final rMap = r as Map<String, dynamic>;
-        return rMap['listingId']?.toString() == listingId &&
-            (rMap['status']?.toString() == 'confirmed' ||
-                rMap['status']?.toString() == 'active' ||
-                rMap['status']?.toString() == 'completed');
-      });
-      if (!hasBooking) {
-        final ownerReservations = await ReservationService().getOwnerReservations();
-        hasBooking = ownerReservations.any((r) {
-          final rMap = r as Map<String, dynamic>;
-          return rMap['listingId']?.toString() == listingId &&
-              (rMap['status']?.toString() == 'confirmed' ||
-                  rMap['status']?.toString() == 'active' ||
-                  rMap['status']?.toString() == 'completed');
-        });
-      }
+      final convoId = await _chatService.findConversationWithUser(
+        otherUserId: ownerId,
+        listingId: widget.listing['id']?.toString(),
+      );
       if (!mounted) return;
-      setState(() => _hasBooking = hasBooking);
-    } catch (e) {
-      // Silently fail - no booking relationship
+      setState(() => _existingConversationId = convoId);
+    } catch (_) {
+      // Ignore lookup errors and allow creating a new chat later.
     }
   }
 
@@ -84,14 +74,28 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
     final title = widget.listing['title']?.toString() ?? 'Terreno';
 
     final otherUserId = currentUid == ownerId ? renterId : ownerId;
-    if (otherUserId == null || otherUserId.isEmpty) return;
+    if (otherUserId == null || otherUserId.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo abrir el chat.')),
+        );
+      }
+      return;
+    }
 
     try {
-      final conversationId = await _chatService.createConversation(
+      String? conversationId = _existingConversationId;
+      conversationId ??= await _chatService.findConversationWithUser(
+        otherUserId: otherUserId,
+        listingId: listingId,
+      );
+      conversationId ??= await _chatService.createConversation(
         otherUserId: otherUserId,
         listingTitle: title,
         listingId: listingId,
       );
+      if (!mounted) return;
+      setState(() => _existingConversationId = conversationId);
       if (mounted) {
         context.push('/chat?id=$conversationId&title=${Uri.encodeComponent(title)}');
       }
@@ -238,6 +242,7 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
     final isRented = statusValue == 'rented';
     final isReview = statusValue == 'review';
     final isRenter = currentUid != null && currentUid == widget.listing['renterId'];
+    final chatLabel = _existingConversationId != null ? 'Continuar chat' : 'Iniciar chat';
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: SingleChildScrollView(
@@ -382,18 +387,18 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                     ),
                   ],
                   const SizedBox(height: AppSpacing.lg),
-                  if (!isOwner && _hasBooking) ...[
+                  if (!isOwner) ...[
                     const SizedBox(height: AppSpacing.md),
                     SizedBox(
                       width: double.infinity,
                       height: 50,
-                      child: ElevatedButton.icon(
+                      child: OutlinedButton.icon(
                         onPressed: _openChat,
-                        icon: const Icon(Icons.chat, size: 20),
-                        label: const Text('Contactar al propietario'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
+                        icon: const Icon(Icons.chat_bubble_outline, size: 20),
+                        label: Text(chatLabel),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: AppColors.primary),
+                          foregroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(AppRadius.lg),
                           ),
@@ -488,7 +493,7 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                                 )
                             ]
                           )
-                        ] else if (isRenter && isRented)
+                        ] else if (!widget.isReservationView && isRenter && isRented)
                           SizedBox(
                             width: 160,
                             height: 50,
@@ -519,7 +524,7 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
                               ),
                             ),
                           )
-                        else if (!isRented && !isReview)
+                        else if (!widget.isReservationView && !isRented && !isReview)
                           SizedBox(
                             width: 120,
                             height: 50,

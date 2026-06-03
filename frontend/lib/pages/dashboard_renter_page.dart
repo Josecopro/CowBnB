@@ -8,6 +8,7 @@ import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../services/auth_service.dart';
 import '../services/reservation_service.dart';
+import '../services/listing_service.dart';
 import '../services/notification_service.dart';
 
 class DashboardRenterPage extends StatefulWidget {
@@ -65,6 +66,37 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
     setState(() {
       profile = loadedProfile;
       isLoadingProfile = false;
+    });
+  }
+
+  Future<void> _openReservationDetails(Map<String, dynamic> reservation) async {
+    final listingId = reservation['listingId']?.toString();
+    if (listingId == null || listingId.isEmpty) return;
+
+    Map<String, dynamic>? listing;
+    try {
+      listing = await ListingService().getListingById(listingId);
+    } catch (_) {
+      listing = null;
+    }
+
+    final fallbackImage = reservation['listingImage']?.toString() ??
+        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
+    final mergedListing = <String, dynamic>{
+      ...?listing,
+      'id': listing?['id'] ?? listingId,
+      'title': listing?['title'] ?? reservation['listingTitle'],
+      'images': listing?['images'] ?? [fallbackImage],
+      'ownerId': listing?['ownerId'] ?? reservation['ownerId'],
+      'renterId': listing?['renterId'] ?? reservation['renterId'] ?? FirebaseAuth.instance.currentUser?.uid,
+      'status': listing?['status'] ?? 'rented',
+      'price': listing?['price'] ?? reservation['monthlyPrice'],
+    };
+
+    if (!mounted) return;
+    context.push('/listing', extra: {
+      'listing': mergedListing,
+      'isReservationView': true,
     });
   }
 
@@ -180,7 +212,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
           notifications: _notifications.map((n) => n.toLegacy()).toList(),
           onPressed: () => showNotificationsModal(
             context,
-            notifications: _notifications.map((n) => n.toLegacy()).toList(),
+            notifications: _notifications,
             notificationService: _notificationService,
           ),
         ),
@@ -373,7 +405,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
     final total = reservation['total'] ?? 0;
 
     return GestureDetector(
-      onTap: () => context.push('/listing', extra: {'id': reservation['listingId']}),
+      onTap: () => _openReservationDetails(reservation),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

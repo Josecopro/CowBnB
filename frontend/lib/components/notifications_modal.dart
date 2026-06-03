@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
 import '../services/notification_service.dart';
 
@@ -76,7 +77,7 @@ class NotificationBellButton extends StatelessWidget {
 
 Future<void> showNotificationsModal(
   BuildContext context, {
-  required List<AppNotification> notifications,
+  required List<AppNotificationData> notifications,
   NotificationService? notificationService,
 }) {
   return showModalBottomSheet<void>(
@@ -142,10 +143,13 @@ Future<void> showNotificationsModal(
                             vertical: AppSpacing.sm,
                           ),
                           itemBuilder: (context, index) {
-                            final AppNotification notification =
+                            final AppNotificationData notification =
                                 notifications[index];
                             return _NotificationTile(
                               notification: notification,
+                              onTap: () {
+                                _handleNotificationTap(context, notification, notificationService);
+                              },
                             );
                           },
                           separatorBuilder: (context, index) =>
@@ -204,61 +208,84 @@ Widget _buildEmptyState() {
 }
 
 class _NotificationTile extends StatelessWidget {
-  const _NotificationTile({required this.notification});
+  const _NotificationTile({
+    required this.notification,
+    this.onTap,
+  });
 
-  final AppNotification notification;
+  final AppNotificationData notification;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: notification.isRead
-            ? AppColors.surfaceContainerLowest
-            : AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(
-          color: notification.isRead ? AppColors.border : AppColors.primary,
+    final legacy = notification.toLegacy();
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: legacy.isRead
+              ? AppColors.surfaceContainerLowest
+              : AppColors.primary.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(
+            color: legacy.isRead ? AppColors.border : AppColors.primary,
+          ),
         ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainer,
-              borderRadius: BorderRadius.circular(AppRadius.md),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceContainer,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+              ),
+              child: Icon(legacy.icon, color: AppColors.primary),
             ),
-            child: Icon(notification.icon, color: AppColors.primary),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  notification.title,
-                  style: AppTextStyles.label,
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  notification.description,
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    legacy.title,
+                    style: AppTextStyles.label,
                   ),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  notification.time,
-                  style: AppTextStyles.labelSmall,
-                ),
-              ],
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    legacy.description,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    legacy.time,
+                    style: AppTextStyles.labelSmall,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+}
+
+void _handleNotificationTap(
+  BuildContext context,
+  AppNotificationData notification,
+  NotificationService? notificationService,
+) {
+  final conversationId = notification.data['conversationId']?.toString();
+  if (conversationId == null || conversationId.isEmpty) return;
+
+  final title = notification.data['listingTitle']?.toString() ?? notification.title;
+  notificationService?.markAsRead(notification.id);
+  Navigator.of(context).pop();
+  context.push('/chat?id=$conversationId&title=${Uri.encodeComponent(title)}');
 }

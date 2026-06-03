@@ -100,6 +100,16 @@ class ListingService {
     }
   }
 
+  Future<Map<String, dynamic>?> getListingById(String listingId) async {
+    final listings = await getAllListings();
+    for (final item in listings) {
+      if (item is Map<String, dynamic> && item['id']?.toString() == listingId) {
+        return item;
+      }
+    }
+    return null;
+  }
+
   Future<List<dynamic>> getMyReservations() async {
     final user = _auth.currentUser;
     if (user == null) {

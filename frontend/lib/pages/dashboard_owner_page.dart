@@ -430,7 +430,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
           notifications: _notifications.map((n) => n.toLegacy()).toList(),
           onPressed: () => showNotificationsModal(
             context,
-            notifications: _notifications.map((n) => n.toLegacy()).toList(),
+            notifications: _notifications,
             notificationService: _notificationService,
           ),
         ),

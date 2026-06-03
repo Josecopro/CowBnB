@@ -145,7 +145,7 @@ class _ExplorePageState extends State<ExplorePage> {
             notifications: _notifications.map((n) => n.toLegacy()).toList(),
             onPressed: () => showNotificationsModal(
               context,
-              notifications: _notifications.map((n) => n.toLegacy()).toList(),
+              notifications: _notifications,
               notificationService: _notificationService,
             ),
           ),
