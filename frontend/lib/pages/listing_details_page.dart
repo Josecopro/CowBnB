@@ -7,7 +7,6 @@ import '../design_tokens.dart';
 import '../components/optimized_network_image.dart';
 import '../services/listing_service.dart';
 import '../services/auth_service.dart';
-import '../services/reservation_service.dart';
 import '../services/chat_service.dart';
 
 enum _ListingStatus { active, rented, review, unknown }
@@ -35,7 +34,7 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
     super.initState();
     _pageController = PageController();
     _checkFavorite();
-    _checkBooking();
+    _loadExistingConversation();
 
     final listingId = widget.listing['id']?.toString();
     if (listingId != null) {

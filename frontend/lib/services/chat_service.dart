@@ -124,6 +124,43 @@ class ChatService {
     return convoId;
   }
 
+  Future<String?> findConversationWithUser({
+    required String otherUserId,
+    String? listingId,
+  }) async {
+    final uid = _userId;
+    if (uid == null) return null;
+
+    final userConvosSnap = await _userConversationsRef.child(uid).get();
+    if (!userConvosSnap.exists) return null;
+
+    final convoIds = <String>[];
+    if (userConvosSnap.value is Map) {
+      final map = Map<String, dynamic>.from(userConvosSnap.value as Map);
+      convoIds.addAll(map.keys.map((key) => key.toString()));
+    } else if (userConvosSnap.value is List) {
+      final list = List<dynamic>.from(userConvosSnap.value as List);
+      for (final entry in list) {
+        if (entry != null) convoIds.add(entry.toString());
+      }
+    }
+
+    for (final convoId in convoIds) {
+      final snapshot = await _conversationsRef.child(convoId).get();
+      if (!snapshot.exists) continue;
+      final data = Map<String, dynamic>.from(snapshot.value as Map? ?? {});
+      final participants = List<String>.from(data['participants'] as List? ?? []);
+      if (!participants.contains(otherUserId)) continue;
+      if (listingId != null && listingId.isNotEmpty) {
+        final convoListingId = data['listingId']?.toString() ?? '';
+        if (convoListingId != listingId) continue;
+      }
+      return convoId;
+    }
+
+    return null;
+  }
+
   Future<void> sendMessage({
     required String conversationId,
     required String text,

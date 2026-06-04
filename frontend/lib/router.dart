@@ -51,8 +51,21 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/listing',
       builder: (context, state) {
-        final listing = state.extra as Map<String, dynamic>? ?? {};
-        return ListingDetailsPage(listing: listing);
+        final extra = state.extra;
+        Map<String, dynamic> listing = {};
+        bool isReservationView = false;
+        if (extra is Map<String, dynamic>) {
+          if (extra['listing'] is Map<String, dynamic>) {
+            listing = Map<String, dynamic>.from(extra['listing'] as Map);
+            isReservationView = extra['isReservationView'] == true;
+          } else {
+            listing = extra;
+          }
+        }
+        return ListingDetailsPage(
+          listing: listing,
+          isReservationView: isReservationView,
+        );
       },
     ),
     GoRoute(
