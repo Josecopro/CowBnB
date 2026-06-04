@@ -6,6 +6,7 @@ import '../components/notifications_modal.dart';
 import '../components/app_bottom_nav.dart';
 import '../services/chat_service.dart';
 import '../services/notification_service.dart';
+import '../services/reservation_service.dart';
 
 class MessagesPage extends StatefulWidget {
   const MessagesPage({super.key});
@@ -86,6 +87,74 @@ class _MessagesPageState extends State<MessagesPage> {
     return convo.unread[uid] ?? 0;
   }
 
+  Future<void> _openNewChatSheet() async {
+    final uid = _chatService.currentUserId;
+    if (uid == null) return;
+
+    final contacts = <Map<String, String?>>[];
+    try {
+      final renterReservations = await ReservationService().getMyReservations();
+      for (final r in renterReservations) {
+        final rm = r as Map<String, dynamic>;
+        if (rm['status']?.toString() == 'cancelled') continue;
+        contacts.add({
+          'name': rm['ownerName']?.toString(),
+          'id': rm['ownerId']?.toString(),
+          'listingTitle': rm['listingTitle']?.toString(),
+          'listingId': rm['listingId']?.toString(),
+          'listingImage': rm['listingImage']?.toString(),
+          'type': 'renter',
+        });
+      }
+
+      final ownerReservations = await ReservationService().getOwnerReservations();
+      for (final r in ownerReservations) {
+        final rm = r as Map<String, dynamic>;
+        if (rm['status']?.toString() == 'cancelled') continue;
+        contacts.add({
+          'name': rm['renterName']?.toString(),
+          'id': rm['renterId']?.toString(),
+          'listingTitle': rm['listingTitle']?.toString(),
+          'listingId': rm['listingId']?.toString(),
+          'listingImage': rm['listingImage']?.toString(),
+          'type': 'owner',
+        });
+      }
+
+      contacts.removeWhere((c) => c['id'] == null || c['id']!.isEmpty);
+    } catch (_) {}
+
+    if (!mounted) return;
+
+    await showModalBottomSheet<Map<String, String?>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _NewChatSheet(
+        contacts: contacts,
+        onContactTap: (contact) async {
+          Navigator.pop(ctx);
+          final otherUserId = contact['id']!;
+          final listingTitle = contact['listingTitle'] ?? '';
+          final listingId = contact['listingId'];
+
+          final existingId = await _chatService.findExistingConversation(
+            otherUserId: otherUserId,
+            listingId: listingId,
+          );
+          final convoId = existingId ?? await _chatService.createConversation(
+            otherUserId: otherUserId,
+            listingTitle: listingTitle,
+            listingId: listingId,
+          );
+          if (mounted) {
+            context.push('/chat?id=$convoId&title=${Uri.encodeComponent(listingTitle)}');
+          }
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -119,16 +188,19 @@ class _MessagesPageState extends State<MessagesPage> {
               onChanged: _onSearchChanged,
               decoration: InputDecoration(
                 hintText: 'Buscar conversacion',
-                prefixIcon: const Icon(Icons.search),
+                hintStyle: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.inkMuted,
+                ),
+                prefixIcon: const Icon(Icons.search, color: AppColors.inkMuted),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: AppColors.surfaceContainer,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide.none,
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.lg),
-                  borderSide: const BorderSide(color: AppColors.border),
+                  borderSide: BorderSide.none,
                 ),
               ),
             ),
@@ -138,25 +210,40 @@ class _MessagesPageState extends State<MessagesPage> {
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredConversations.isEmpty
                     ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.chat_bubble_outline,
-                                size: 64, color: AppColors.textSecondary.withValues(alpha: 0.4)),
-                            const SizedBox(height: AppSpacing.md),
-                            Text(
-                              'No hay conversaciones',
-                              style: AppTextStyles.headlineSmall.copyWith(fontSize: 20),
-                            ),
-                            const SizedBox(height: AppSpacing.sm),
-                            Text(
-                              'Las conversaciones con propietarios\nde tus reservas aparecerán aquí.',
-                              textAlign: TextAlign.center,
-                              style: AppTextStyles.bodySmall.copyWith(
-                                color: AppColors.textSecondary,
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceContainer,
+                                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                                ),
+                                child: const Icon(
+                                  Icons.chat_bubble_outline,
+                                  size: 28,
+                                  color: AppColors.inkMuted,
+                                ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: AppSpacing.md),
+                              Text(
+                                'Aun no tienes conversaciones',
+                                style: AppTextStyles.label,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                'Los mensajes con propietarios de tus\nreservas apareceran aqui.',
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.inkMuted,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       )
                     : ListView.separated(
@@ -164,77 +251,82 @@ class _MessagesPageState extends State<MessagesPage> {
                         itemBuilder: (context, index) {
                           final convo = _filteredConversations[index];
                           final unread = _unreadCount(convo);
-                          return GestureDetector(
-                            onTap: () {
-                              context.push('/chat?id=${convo.id}&title=${Uri.encodeComponent(convo.listingTitle)}');
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(AppSpacing.md),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(AppRadius.lg),
-                                border: Border.all(color: AppColors.border),
-                              ),
-                              child: Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 24,
-                                    backgroundColor: AppColors.surfaceContainer,
-                                    child: Icon(Icons.person,
-                                        color: AppColors.textSecondary, size: 24),
-                                  ),
-                                  const SizedBox(width: AppSpacing.md),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(convo.listingTitle,
-                                                style: AppTextStyles.label),
-                                            Text(
-                                              convo.lastMessageTime > 0
-                                                  ? _formatTime(convo.lastMessageTime)
-                                                  : '',
-                                              style: AppTextStyles.labelSmall,
+                          return Semantics(
+                            button: true,
+                            label: 'Conversacion sobre ${convo.listingTitle}',
+                            child: InkWell(
+                              onTap: () {
+                                context.push('/chat?id=${convo.id}&title=${Uri.encodeComponent(convo.listingTitle)}');
+                              },
+                              borderRadius: BorderRadius.circular(AppRadius.lg),
+                              child: Container(
+                                padding: const EdgeInsets.all(AppSpacing.md),
+                                decoration: BoxDecoration(
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                                  border: Border.all(color: AppColors.border),
+                                ),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 24,
+                                      backgroundColor: AppColors.surfaceContainer,
+                                      child: Icon(Icons.person,
+                                          color: AppColors.inkMuted, size: 24),
+                                    ),
+                                    const SizedBox(width: AppSpacing.md),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(convo.listingTitle,
+                                                  style: AppTextStyles.label),
+                                              Text(
+                                                convo.lastMessageTime > 0
+                                                    ? _formatTime(convo.lastMessageTime)
+                                                    : '',
+                                                style: AppTextStyles.labelSmall,
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            convo.lastMessage.isNotEmpty
+                                                ? convo.lastMessage
+                                                : 'Aun sin mensajes',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: AppTextStyles.bodySmall.copyWith(
+                                              color: AppColors.inkMuted,
                                             ),
-                                          ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (unread > 0)
+                                      Container(
+                                        margin: const EdgeInsets.only(left: AppSpacing.sm),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
                                         ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          convo.lastMessage.isNotEmpty
-                                              ? convo.lastMessage
-                                              : 'Sin mensajes aún',
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: AppTextStyles.bodySmall.copyWith(
-                                            color: AppColors.textSecondary,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primary,
+                                          borderRadius: BorderRadius.circular(AppRadius.pill),
+                                        ),
+                                        child: Text(
+                                          '$unread',
+                                          style: AppTextStyles.labelSmall.copyWith(
+                                            color: Colors.white,
                                           ),
                                         ),
-                                      ],
-                                    ),
-                                  ),
-                                  if (unread > 0)
-                                    Container(
-                                      margin: const EdgeInsets.only(left: AppSpacing.sm),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
                                       ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary,
-                                        borderRadius: BorderRadius.circular(999),
-                                      ),
-                                      child: Text(
-                                        '$unread',
-                                        style: AppTextStyles.labelSmall.copyWith(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           );
@@ -248,9 +340,143 @@ class _MessagesPageState extends State<MessagesPage> {
       ),
       bottomNavigationBar: const AppBottomNav(activeItem: AppNavItem.messages),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.go('/map'),
+        onPressed: _openNewChatSheet,
         icon: const Icon(Icons.add_comment),
         label: const Text('Nuevo chat'),
+      ),
+    );
+  }
+}
+
+class _NewChatSheet extends StatelessWidget {
+  final List<Map<String, String?>> contacts;
+  final void Function(Map<String, String?>) onContactTap;
+
+  const _NewChatSheet({
+    required this.contacts,
+    required this.onContactTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.65,
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+      ),
+      child: Column(
+        children: [
+          const SizedBox(height: AppSpacing.md),
+          Container(
+            width: 52,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.border,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Row(
+              children: [
+                Text(
+                  'Nuevo mensaje',
+                  style: AppTextStyles.headlineSmall.copyWith(fontSize: 20),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, color: AppColors.border),
+          if (contacts.isEmpty)
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceContainer,
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                        ),
+                        child: const Icon(
+                          Icons.person_add_disabled,
+                          size: 28,
+                          color: AppColors.inkMuted,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      Text(
+                        'Aun no tienes contactos',
+                        style: AppTextStyles.label,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Solo puedes chatear con personas\ncon las que tengas una reserva activa.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.inkMuted,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          else
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
+                itemCount: contacts.length,
+                separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+                itemBuilder: (context, index) {
+                  final contact = contacts[index];
+                  final name = contact['name'] ?? 'Usuario';
+                  final listing = contact['listingTitle'] ?? 'Terreno';
+                  final image = contact['listingImage'] ?? '';
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(AppRadius.lg),
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.all(AppSpacing.sm),
+                      leading: CircleAvatar(
+                        radius: 24,
+                        backgroundColor: AppColors.surfaceContainer,
+                        backgroundImage: image.isNotEmpty
+                            ? NetworkImage(image)
+                            : null,
+                        child: image.isEmpty
+                            ? Icon(Icons.person, color: AppColors.inkMuted, size: 24)
+                            : null,
+                      ),
+                      title: Text(name, style: AppTextStyles.label),
+                      subtitle: Text(
+                        listing,
+                        style: AppTextStyles.bodySmall.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      trailing: const Icon(Icons.chat_bubble_outline,
+                          color: AppColors.primary, size: 20),
+                      onTap: () => onContactTap(contact),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
       ),
     );
   }

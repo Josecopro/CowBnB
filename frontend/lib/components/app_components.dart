@@ -25,7 +25,7 @@ class AppButton extends StatelessWidget {
       case ButtonVariant.primary:
         return AppColors.primary;
       case ButtonVariant.secondary:
-        return AppColors.secondary;
+        return AppColors.surfaceContainer;
       case ButtonVariant.outlined:
         return Colors.transparent;
     }
@@ -34,8 +34,9 @@ class AppButton extends StatelessWidget {
   Color _getTextColor(ButtonVariant variant) {
     switch (variant) {
       case ButtonVariant.primary:
-      case ButtonVariant.secondary:
         return Colors.white;
+      case ButtonVariant.secondary:
+        return AppColors.ink;
       case ButtonVariant.outlined:
         return AppColors.primary;
     }
@@ -106,7 +107,7 @@ class AppCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(padding),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(borderRadius),
         border: Border.all(color: AppColors.border),
       ),
@@ -169,29 +170,29 @@ class _AppInputState extends State<AppInput> {
           decoration: InputDecoration(
             hintText: widget.hint,
             hintStyle: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+              color: AppColors.inkMuted,
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16.0,
               vertical: 16.0,
             ),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.0),
+              borderRadius: BorderRadius.circular(AppRadius.md),
               borderSide: const BorderSide(color: AppColors.border),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.0),
+              borderRadius: BorderRadius.circular(AppRadius.md),
               borderSide: const BorderSide(color: AppColors.border),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12.0),
+              borderRadius: BorderRadius.circular(AppRadius.md),
               borderSide: const BorderSide(
                 color: AppColors.primary,
                 width: 2,
               ),
             ),
             filled: true,
-            fillColor: AppColors.surfaceContainerLowest,
+            fillColor: AppColors.surfaceContainer,
           ),
         ),
       ],

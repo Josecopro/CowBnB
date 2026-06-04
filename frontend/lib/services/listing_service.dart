@@ -10,16 +10,17 @@ class ListingService {
   ListingService({ApiClient? apiClient}) 
       : apiClient = apiClient ?? ApiClient(baseUrl: AppConfig.apiBaseUrl);
 
-  Future<String> createListing({
-    required String title,
-    required String description,
-    required num size,
-    required num price,
-    num? maintenanceCost,
-    String? status,
-    required List<String> features,
-    required List<Map<String, String>> imagesBase64,
-  }) async {
+   Future<String> createListing({
+     required String title,
+     required String description,
+     required num size,
+     required num price,
+     num? maintenanceCost,
+     String? status,
+     required List<String> features,
+     required List<Map<String, String>> imagesBase64,
+     List<List<double>>? coordenadas,
+   }) async {
     final user = _auth.currentUser;
     if (user == null) {
       throw Exception('Not authenticated');
@@ -30,16 +31,17 @@ class ListingService {
       throw Exception('Failed to get token');
     }
 
-    final body = {
-      'title': title,
-      'description': description,
-      'size': size,
-      'price': price,
-      if (maintenanceCost != null) 'maintenanceCost': maintenanceCost,
-      if (status != null) 'status': status,
-      'features': features,
-      'images': imagesBase64,
-    };
+     final body = {
+       'title': title,
+       'description': description,
+       'size': size,
+       'price': price,
+       if (maintenanceCost != null) 'maintenanceCost': maintenanceCost,
+       if (status != null) 'status': status,
+       'features': features,
+       'images': imagesBase64,
+       if (coordenadas != null) 'coordenadas': coordenadas,
+     };
 
     final response = await apiClient.postJson(
       '/api/listings',

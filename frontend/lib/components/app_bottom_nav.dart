@@ -106,14 +106,14 @@ class AppBottomNav extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isActive ? AppColors.success : Colors.white70,
+              color: isActive ? AppColors.primary : AppColors.onDark.withValues(alpha: 0.7),
               size: 24,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: AppTextStyles.labelSmall.copyWith(
-                color: isActive ? AppColors.success : Colors.white70,
+                color: isActive ? AppColors.primary : AppColors.onDark.withValues(alpha: 0.7),
                 fontSize: 11,
               ),
             ),

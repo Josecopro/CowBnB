@@ -221,6 +221,28 @@ class ChatService {
     return ChatConversation.fromSnapshot(snapshot);
   }
 
+  Future<String?> findExistingConversation({
+    required String otherUserId,
+    String? listingId,
+  }) async {
+    final uid = _userId;
+    if (uid == null) return null;
+
+    final snapshot = await _conversationsRef.get();
+    if (!snapshot.exists) return null;
+
+    for (final child in snapshot.children) {
+      final data = Map<String, dynamic>.from(child.value as Map);
+      final participants = List<String>.from(data['participants'] as List? ?? []);
+      if (participants.contains(uid) && participants.contains(otherUserId)) {
+        if (listingId == null) return child.key;
+        final convListingId = data['listingId']?.toString() ?? '';
+        if (convListingId == listingId) return child.key;
+      }
+    }
+    return null;
+  }
+
   Future<void> markAsRead(String conversationId) async {
     final uid = _userId;
     if (uid == null) return;

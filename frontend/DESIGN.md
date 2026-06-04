@@ -1,352 +1,79 @@
-# 🎨 CowBnB Design System — Flutter + Dart + Agents
+# Design System Document: The Fertile Digital Landscape
+
+## 1. Overview & Creative North Star: "CowBnB"
+This design system moves beyond the generic "marketplace" aesthetic to establish a visual language rooted in **CowBnB**. Our North Star is a fusion of precision agricultural technology and high-end editorial clarity. We reject the "boxed-in" feeling of standard SaaS templates in favor of a layered, organic experience that feels as expansive as the farmland it represents.
+
+To break the "template" look, we utilize **Intentional Asymmetry**. Hero layouts should push imagery off-center, allowing sophisticated typography scales to occupy the negative space. We prioritize "breathing room" (generous white space) over information density, ensuring that every plot of land feels premium and every transaction feels secure.
 
 ---
 
-## 1. 📌 Purpose
+## 2. Colors & Tonal Depth
+Our palette is inspired by satellite imagery and lush topography. We use color not just for decoration, but to define the physical architecture of the interface.
 
-Este documento define un **Design System programable** optimizado para:
+### The "No-Line" Rule
+**Strict Mandate:** Designers are prohibited from using 1px solid borders for sectioning. Boundaries between content blocks must be defined solely through background color shifts. For instance, a `surface-container-low` section should sit against a `surface` background to create a "ledge" rather than a "fence."
 
-* Generación automática de UI por agentes
-* Consistencia en Flutter (`Material 3`)
-* Escalabilidad modular
-* Minimizar decisiones ambiguas en UI
+### Surface Hierarchy & Nesting
+Treat the UI as a series of stacked, organic layers. 
+- **Base Layer:** `surface` (#f3fbf4) for general page backgrounds.
+- **Content Blocks:** Use `surface-container` (#e8f0e9) to group related information.
+- **Elevated Cards:** Use `surface-container-lowest` (#ffffff) to make interactive elements pop against muted backgrounds. This "low-to-high" nesting creates natural depth without visual clutter.
 
----
-
-## 2. 🧠 Core Principle (CRÍTICO PARA AGENTES)
-
-> ⚠️ **Regla absoluta:**
-> El agente **NO puede inventar estilos**.
-> Debe usar exclusivamente los tokens definidos aquí.
-
----
-
-## 3. 🎨 Design Tokens (Fuente Única de Verdad)
-
-### 3.1 Color Tokens
-
-```dart
-class AppColors {
-  static const primary = Color(0xFF5CA275);
-  static const primaryDark = Color(0xFF4A8A62);
-  static const primaryLight = Color(0xFF7BBF93);
-
-  static const secondary = Color(0xFF577763);
-
-  static const success = Color(0xFF51CC7F);
-  static const error = Color(0xFFD64545);
-  static const warning = Color(0xFFE6A23C);
-
-  static const textPrimary = Color(0xFF454D48);
-  static const textSecondary = Color(0xFF8A918D);
-  static const border = Color(0xFFDADDD9);
-}
-```
+### The "Glass & Gradient" Rule
+To evoke "Agro-tech" sophistication, use **Glassmorphism** for floating navigation bars or filter drawers. 
+- **Effect:** Apply `surface-container-lowest` at 80% opacity with a `24px` backdrop blur.
+- **Signature Textures:** For primary CTAs and Hero headers, use a subtle linear gradient (Top-Left to Bottom-Right) transitioning from `primary` (#236b43) to `tertiary-container` (#24a85f). This adds a "living" quality to the interface.
 
 ---
 
-### 3.2 Spacing Tokens (8pt grid)
+## 3. Typography: The Grounded Editorial
+We pair **Manrope** (Display/Headlines) with **Work Sans** (Body/Labels) to balance technological precision with human legibility.
 
-```dart
-class AppSpacing {
-  static const xs = 4.0;
-  static const sm = 8.0;
-  static const md = 16.0;
-  static const lg = 24.0;
-  static const xl = 32.0;
-}
-```
+*   **Display Scale (Manrope):** Use `display-lg` (3.5rem) for hero statements. Tighten letter-spacing by -2% to give it an authoritative, editorial punch.
+*   **Headline Scale (Manrope):** `headline-md` (1.75rem) serves as the primary anchor for land listings.
+*   **Body Scale (Work Sans):** `body-lg` (1rem) is the workhorse. Ensure a line-height of 1.6 for maximum readability during long-form lease reviews.
+*   **Label Scale (Work Sans):** `label-md` (0.75rem) in `on-surface-variant` (#404941) provides metadata without distracting from the primary narrative.
 
 ---
 
-### 3.3 Radius Tokens
+## 4. Elevation & Depth: Tonal Layering
+Traditional drop shadows are too "heavy" for this system. We achieve lift through light and tone.
 
-```dart
-class AppRadius {
-  static const sm = 8.0;
-  static const md = 12.0;
-  static const lg = 16.0;
-}
-```
+*   **The Layering Principle:** Place a card using `surface-container-lowest` (#ffffff) on a background of `surface-container-low` (#eef6ef). The contrast alone provides the necessary "lift."
+*   **Ambient Shadows:** Where floating interaction is required (e.g., a "Book Now" floating bar), use a shadow: `0px 20px 40px rgba(29, 51, 37, 0.06)`. This uses a tinted version of our `deep-background` to mimic natural light filtered through a canopy.
+*   **The Ghost Border:** If a boundary is required for accessibility, use a 1px stroke of `outline-variant` (#bfc9bf) at **15% opacity**. It should be felt, not seen.
 
 ---
 
-### 3.4 Typography Tokens
+## 5. Components: Precision Primitives
 
-```dart
-class AppTextStyles {
-  static const headline = TextStyle(
-    fontSize: 32,
-    fontWeight: FontWeight.bold,
-    color: AppColors.textPrimary,
-  );
+### Buttons: The High-Contrast Action
+- **Primary:** Gradient fill (`primary` to `tertiary-container`), white text, `xl` (1.5rem) roundedness.
+- **Secondary:** `secondary-container` (#c5e8d0) with `on-secondary-container` (#4a6a56) text. No border.
+- **Interaction:** On hover, increase the gradient saturation. On click, use a subtle `0.98` scale transform.
 
-  static const body = TextStyle(
-    fontSize: 16,
-    color: AppColors.textPrimary,
-  );
+### Inputs: The Clean Slate
+- **Surface:** `surface-container-highest` (#dce5de).
+- **Border:** None, except for a 2px `primary` bottom-bar that expands from the center on focus.
+- **Radius:** `md` (0.75rem).
 
-  static const label = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w500,
-  );
-}
-```
+### Cards & Lists: The Infinite Field
+- **The Rule of No Dividers:** Forbid the use of horizontal rules (`<hr>`). Separate list items using the spacing scale (e.g., `8` / 2rem) or alternating tonal shifts between `surface` and `surface-container-low`.
+- **Land Cards:** Use `xl` (1.5rem) corner radius for main imagery. Metadata should be clustered in the bottom-left using `title-sm` for price and `label-md` for location.
+
+### Specialized Component: The "Yield Map" Chip
+A specialized chip for farmland data. Use `tertiary-fixed` (#81fba8) background with `on-tertiary-fixed-variant` (#00522a) text to highlight soil quality or acreage.
 
 ---
 
-## 4. 🎯 ThemeData (Integración Flutter)
+## 6. Do’s and Don’ts
 
-```dart
-ThemeData buildTheme() {
-  return ThemeData(
-    useMaterial3: true,
-    colorScheme: ColorScheme(
-      brightness: Brightness.light,
-      primary: AppColors.primary,
-      onPrimary: Colors.white,
-      secondary: AppColors.secondary,
-      onSecondary: Colors.white,
-      error: AppColors.error,
-      onError: Colors.white,
-      surface: Colors.white,
-      onSurface: AppColors.textPrimary,
-    ),
+### Do:
+*   **Do** use asymmetrical margins (e.g., 8rem on the left, 4rem on the right) for editorial layouts.
+*   **Do** use `pure white` (#ffffff) text exclusively on `Deep/Background` (#1D3325) or `Primary` surfaces.
+*   **Do** leverage the `xl` (1.5rem) corner radius for high-impact imagery to make the tech feel approachable.
 
-    textTheme: const TextTheme(
-      headlineLarge: AppTextStyles.headline,
-      bodyMedium: AppTextStyles.body,
-      labelMedium: AppTextStyles.label,
-    ),
-  );
-}
-```
-
----
-
-## 5. 🧱 Component System (Agent-Driven)
-
-### 5.1 Button Component
-
-#### API
-
-```dart
-enum ButtonVariant { primary, secondary, outlined }
-
-class AppButton extends StatelessWidget {
-  final String label;
-  final VoidCallback? onPressed;
-  final ButtonVariant variant;
-
-  const AppButton({
-    required this.label,
-    required this.onPressed,
-    this.variant = ButtonVariant.primary,
-  });
-}
-```
-
----
-
-#### Implementación base
-
-```dart
-Color _getColor(ButtonVariant variant) {
-  switch (variant) {
-    case ButtonVariant.primary:
-      return AppColors.primary;
-    case ButtonVariant.secondary:
-      return AppColors.secondary;
-    case ButtonVariant.outlined:
-      return Colors.transparent;
-  }
-}
-```
-
----
-
-### 5.2 Card Component
-
-```dart
-class AppCard extends StatelessWidget {
-  final Widget child;
-
-  const AppCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: child,
-    );
-  }
-}
-```
-
----
-
-### 5.3 Input Component
-
-```dart
-class AppInput extends StatelessWidget {
-  final String hint;
-
-  const AppInput({required this.hint});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      decoration: InputDecoration(
-        hintText: hint,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
-      ),
-    );
-  }
-}
-```
-
----
-
-## 6. 🤖 Agent Rules (MUY IMPORTANTE)
-
-### 6.1 Generación de UI
-
-El agente debe:
-
-1. Usar SOLO componentes definidos (`AppButton`, `AppCard`, etc.)
-2. NO usar `Container` directo si existe componente equivalente
-3. NO hardcodear colores
-4. Usar `AppSpacing` siempre
-
----
-
-### 6.2 Jerarquía de UI
-
-Orden obligatorio:
-
-```
-Screen
- ├── Scaffold
- │    ├── AppBar
- │    └── Body
- │         ├── AppCard
- │         ├── AppInput
- │         └── AppButton
-```
-
----
-
-### 6.3 Naming Convention
-
-```
-[feature]_[component]_[variant]
-```
-
-Ejemplo:
-
-```
-login_button_primary
-dashboard_card_stats
-```
-
----
-
-## 7. 📐 Layout Rules
-
-* Padding global: `AppSpacing.lg`
-* Separación vertical: `AppSpacing.md`
-* Máximo ancho recomendado: `600px` (mobile-first)
-
----
-
-## 8. 🎬 Animations
-
-```dart
-const defaultAnimationDuration = Duration(milliseconds: 200);
-```
-
-Reglas:
-
-* Siempre usar animaciones suaves
-* Nunca animaciones > 300ms
-
----
-
-## 9. ♿ Accesibilidad
-
-* Texto mínimo: 14px
-* Botones mínimo: 48px altura
-* Contraste obligatorio
-
----
-
-## 10. 🧩 Ejemplo Generado (Referencia para Agentes)
-
-```dart
-class ExampleScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("CowBnB")),
-      body: Padding(
-        padding: EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          children: [
-            AppCard(
-              child: Column(
-                children: [
-                  Text("Welcome", style: AppTextStyles.headline),
-                  SizedBox(height: AppSpacing.md),
-                  AppInput(hint: "Enter name"),
-                  SizedBox(height: AppSpacing.md),
-                  AppButton(
-                    label: "Continue",
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-```
-
----
-
-## 11. 🚫 Anti-Patterns
-
-❌ `Color(0xFFxxxxxx)` fuera de tokens
-❌ `EdgeInsets.all(13)` (usar spacing)
-❌ UI inconsistente
-❌ Mezclar estilos inline
-
----
-
-## 12. 🚀 Extensión futura
-
-* Dark mode automático
-* Soporte para responsive (tablet/web)
-* Integración con generadores AI (LLM → Flutter UI)
-
----
-
-## 13. ✅ Conclusión
-
-Este sistema permite a un agente:
-
-* Generar UI automáticamente
-* Mantener consistencia perfecta
-* Reducir errores de diseño
-* Escalar rápidamente en Flutter
-
----
+### Don’t:
+*   **Don’t** use pure black (#000000) for text. Use `on-surface` (#161d19) to maintain a soft, organic feel.
+*   **Don’t** use standard "Material" shadows. If it looks like a "box" with a shadow, it’s not refined enough.
+*   **Don’t** use icons without a clear "Agro-tech" weight. Use 1.5pt stroke icons that match the `outline` token.

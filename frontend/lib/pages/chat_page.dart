@@ -80,7 +80,7 @@ class _ChatPageState extends State<ChatPage> {
         backgroundColor: AppColors.darkBg,
         title: Text(
           widget.conversationTitle,
-          style: AppTextStyles.headline.copyWith(
+          style: AppTextStyles.headlineSmall.copyWith(
             color: Colors.white,
             fontSize: 18,
           ),
@@ -93,11 +93,39 @@ class _ChatPageState extends State<ChatPage> {
                 ? const Center(child: CircularProgressIndicator())
                 : _messages.isEmpty
                     ? Center(
-                        child: Text(
-                          'No hay mensajes aún.\n¡Envía el primero!',
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.body.copyWith(
-                            color: AppColors.textSecondary,
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 64,
+                                height: 64,
+                                decoration: BoxDecoration(
+                                  color: AppColors.surfaceContainer,
+                                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                                ),
+                                child: const Icon(
+                                  Icons.forum_outlined,
+                                  size: 28,
+                                  color: AppColors.inkMuted,
+                                ),
+                              ),
+                              const SizedBox(height: AppSpacing.md),
+                              Text(
+                                'Aun no hay mensajes',
+                                style: AppTextStyles.label,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                'Envia el primer mensaje para iniciar la conversacion.',
+                                textAlign: TextAlign.center,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.inkMuted,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       )
@@ -129,14 +157,10 @@ class _ChatPageState extends State<ChatPage> {
         AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        color: AppColors.surface,
+        border: Border(
+          top: BorderSide(color: AppColors.borderSoft),
+        ),
       ),
       child: SafeArea(
         top: false,
@@ -148,24 +172,24 @@ class _ChatPageState extends State<ChatPage> {
                 decoration: InputDecoration(
                   hintText: 'Escribe un mensaje...',
                   hintStyle: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: AppColors.inkMuted,
                   ),
                   filled: true,
-                  fillColor: AppColors.surfaceContainerLowest,
+                  fillColor: AppColors.surfaceContainer,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
                     vertical: 12,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.xl),
-                    borderSide: const BorderSide(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                    borderSide: BorderSide.none,
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.xl),
-                    borderSide: const BorderSide(color: AppColors.border),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                    borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.xl),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
                     borderSide: const BorderSide(
                       color: AppColors.primary,
                       width: 2,
@@ -179,9 +203,9 @@ class _ChatPageState extends State<ChatPage> {
             const SizedBox(width: AppSpacing.sm),
             Material(
               color: AppColors.primary,
-              borderRadius: BorderRadius.circular(AppRadius.xl),
+              borderRadius: BorderRadius.circular(AppRadius.pill),
               child: InkWell(
-                borderRadius: BorderRadius.circular(AppRadius.xl),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
                 onTap: _sendMessage,
                 child: const Padding(
                   padding: EdgeInsets.all(12),
@@ -248,7 +272,7 @@ class _MessageBubble extends StatelessWidget {
                     vertical: 10,
                   ),
                   decoration: BoxDecoration(
-                    color: isMine ? AppColors.primary : Colors.white,
+                    color: isMine ? AppColors.primary : AppColors.surface,
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(AppRadius.md),
                       topRight: const Radius.circular(AppRadius.md),
@@ -270,7 +294,7 @@ class _MessageBubble extends StatelessWidget {
                         message.text,
                         style: AppTextStyles.bodySmall.copyWith(
                           color:
-                              isMine ? Colors.white : AppColors.textPrimary,
+                              isMine ? Colors.white : AppColors.ink,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -280,7 +304,7 @@ class _MessageBubble extends StatelessWidget {
                           fontSize: 11,
                           color: isMine
                               ? Colors.white.withValues(alpha: 0.7)
-                              : AppColors.textSecondary,
+                              : AppColors.inkMuted,
                         ),
                       ),
                     ],

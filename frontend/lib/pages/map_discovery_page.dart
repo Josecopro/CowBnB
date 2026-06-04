@@ -63,24 +63,24 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                 decoration: InputDecoration(
                   hintText: 'Buscar ubicación',
                   hintStyle: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: AppColors.inkMuted,
                   ),
                   prefixIcon:
-                      const Icon(Icons.search, color: AppColors.textSecondary),
+                      const Icon(Icons.search, color: AppColors.inkMuted),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,
                     vertical: AppSpacing.md,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppRadius.lg),
-                    borderSide: const BorderSide(color: AppColors.border),
+                    borderSide: BorderSide.none,
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AppRadius.lg),
-                    borderSide: const BorderSide(color: AppColors.border),
+                    borderSide: BorderSide.none,
                   ),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: AppColors.surfaceContainer,
                 ),
               ),
             ),
@@ -92,7 +92,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                 children: [
                   // Map Image
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(AppRadius.xl),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
                     child: AppNetworkImage(
                       imageUrl:
                           'https://images.unsplash.com/photo-1586771107445-d3af255c2690?q=80&w=2832&auto=format&fit=crop',
@@ -103,39 +103,21 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                     ),
                   ),
 
-                  // Price Pins
-                  if (allListings.isNotEmpty)
-                    ...allListings.take(4).map((listing) {
-                      final random = Random(listing.hashCode);
-                      // Random positions between 40 and 200 for top/bottom, 40 and 200 for left/right
-                      final top = 40.0 + random.nextInt(160);
-                      final left = 40.0 + random.nextInt(160);
-                      final price = '\$${listing['price'] ?? 0}';
+                  // Price Pins from real listings only
+                  ...allListings.take(4).map((listing) {
+                    final random = Random(listing.hashCode);
+                    // Random positions between 40 and 200 for top/bottom, 40 and 200 for left/right
+                    final top = 40.0 + random.nextInt(160);
+                    final left = 40.0 + random.nextInt(160);
+                    final price = '\$${listing['price'] ?? 0}';
 
-                      return Positioned(
-                        top: top,
-                        left: left,
-                        child: _buildePricePin(price,
-                            highlighted: random.nextBool()),
-                      );
-                    }).toList()
-                  else ...[
-                    Positioned(
-                      top: 100,
-                      left: 60,
-                      child: _buildePricePin('\$4,200'),
-                    ),
-                    Positioned(
-                      bottom: 80,
-                      right: 80,
-                      child: _buildePricePin('\$2,850'),
-                    ),
-                    Positioned(
-                      top: 160,
-                      right: 60,
-                      child: _buildePricePin('\$3,100', highlighted: true),
-                    ),
-                  ],
+                    return Positioned(
+                      top: top,
+                      left: left,
+                      child: _buildePricePin(price,
+                          highlighted: random.nextBool()),
+                    );
+                  }),
 
                   // Control Buttons (Top Right)
                   Positioned(
@@ -164,14 +146,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                         ),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(AppRadius.lg),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primaryDark.withOpacity(0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -214,7 +189,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                           Text(
                             'Basado en tu actividad',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                              color: AppColors.inkMuted,
                             ),
                           ),
                         ],
@@ -239,42 +214,46 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
             // Recommended Cards Horizontal Scroll
             SizedBox(
               height: 330,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                children: [
-                  if (allListings.isNotEmpty)
-                    ...allListings.map((listing) {
-                      return Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.md),
-                        child: _buildListingCard(
-                          listing: listing as Map<String, dynamic>,
+              child: allListings.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.map_outlined,
+                                size: 32, color: AppColors.inkMuted),
+                            const SizedBox(height: AppSpacing.md),
+                            Text(
+                              'Aun no hay terrenos para mostrar',
+                              style: AppTextStyles.label,
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(
+                              'Vuelve pronto: seguimos publicando nuevas hectareas.',
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.bodySmall.copyWith(
+                                color: AppColors.inkMuted,
+                              ),
+                            ),
+                          ],
                         ),
-                      );
-                    }).toList()
-                  else ...[
-                    _buildListingCard(
-                      listing: {
-                        'title': 'Rancho Pradera Dorada',
-                        'location': 'Boise, Idaho',
-                        'images': ['https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop'],
-                        'price': '1,200',
-                        'totalArea': '120',
-                      },
+                      ),
+                    )
+                  : ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      children: [
+                        for (final listing in allListings)
+                          Padding(
+                            padding: const EdgeInsets.only(right: AppSpacing.md),
+                            child: _buildListingCard(
+                              listing: listing as Map<String, dynamic>,
+                            ),
+                          ),
+                      ],
                     ),
-                    const SizedBox(width: AppSpacing.md),
-                    _buildListingCard(
-                      listing: {
-                        'title': 'Parcelas del Valle del Rio',
-                        'location': 'Eugene, Oregon',
-                        'images': ['https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=1000&auto=format&fit=crop'],
-                        'price': '950',
-                        'totalArea': '45',
-                      },
-                    ),
-                  ],
-                ],
-              ),
             ),
 
             const SizedBox(height: AppSpacing.lg),
@@ -342,31 +321,28 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
   }
 
   Widget _buildePricePin(String price, {bool highlighted = false}) {
-    return GestureDetector(
-      onTap: () => context.go('/listing'),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.xs,
-        ),
-        decoration: BoxDecoration(
-          color: AppColors.primary,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-          border:
-              highlighted ? Border.all(color: Colors.white, width: 2) : null,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primaryDark.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+    return Semantics(
+      button: true,
+      label: 'Terreno desde $price al mes',
+      child: GestureDetector(
+        onTap: () => context.go('/listing'),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            border:
+                highlighted ? Border.all(color: Colors.white, width: 2) : null,
+          ),
+          child: Text(
+            price,
+            style: AppTextStyles.label.copyWith(
+              color: Colors.white,
+              fontSize: 12,
             ),
-          ],
-        ),
-        child: Text(
-          price,
-          style: AppTextStyles.label.copyWith(
-            color: Colors.white,
-            fontSize: 12,
           ),
         ),
       ),
@@ -377,14 +353,8 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-          ),
-        ],
       ),
       child: Icon(icon, color: AppColors.primary, size: 20),
     );
@@ -421,8 +391,8 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
       child: Container(
         width: 280,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(color: AppColors.border),
         ),
         child: Column(
@@ -432,8 +402,8 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(AppRadius.xl),
-                    topRight: Radius.circular(AppRadius.xl),
+                    topLeft: Radius.circular(AppRadius.lg),
+                    topRight: Radius.circular(AppRadius.lg),
                   ),
                   child: AppNetworkImage(
                     imageUrl: image,
@@ -452,11 +422,11 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.success.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(20),
+                      color: AppColors.success.withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
                     ),
                     child: Text(
-                      'MEJOR VALOR',
+                      'Mejor valor',
                       style: AppTextStyles.labelSmall.copyWith(
                         color: Colors.white,
                         fontSize: 10,
@@ -470,7 +440,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                   child: Container(
                     padding: const EdgeInsets.all(AppSpacing.xs),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: AppColors.surface.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: const Icon(Icons.favorite_border,
@@ -497,7 +467,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.star, size: 16, color: Colors.amber),
+                          const Icon(Icons.star, size: 16, color: AppColors.accent),
                           const SizedBox(width: 4),
                           Text(
                             rating.toString(),
@@ -511,12 +481,12 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                   Row(
                     children: [
                       const Icon(Icons.location_on,
-                          size: 16, color: AppColors.textSecondary),
+                          size: 16, color: AppColors.inkMuted),
                       const SizedBox(width: 4),
                       Text(
                         location,
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: AppColors.inkMuted,
                         ),
                       ),
                     ],
@@ -538,7 +508,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                           Text(
                             '/mes',
                             style: AppTextStyles.labelSmall.copyWith(
-                              color: AppColors.textSecondary,
+                              color: AppColors.inkMuted,
                             ),
                           ),
                         ],
@@ -555,7 +525,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
                         child: Text(
                           acres,
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.textSecondary,
+                            color: AppColors.inkMuted,
                             fontSize: 12,
                           ),
                         ),
@@ -580,9 +550,8 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: color.withOpacity(0.2)),
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,7 +559,7 @@ class _MapDiscoveryPageState extends State<MapDiscoveryPage> {
           Text(
             label,
             style: AppTextStyles.labelSmall.copyWith(
-              color: AppColors.textSecondary,
+              color: AppColors.inkMuted,
             ),
           ),
           const SizedBox(height: AppSpacing.sm),

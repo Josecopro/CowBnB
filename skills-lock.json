@@ -1,6 +1,18 @@
 {
   "version": 1,
   "skills": {
+    "bold-pagos-colombia": {
+      "source": "local",
+      "sourceType": "local",
+      "path": "./skills/bold/SKILL.md",
+      "computedHash": "bold-pagos-colombia-v1-abril2026"
+    },
+    "design-taste-frontend": {
+      "source": "Leonxlnx/taste-skill",
+      "sourceType": "github",
+      "skillPath": "skills/taste-skill/SKILL.md",
+      "computedHash": "6d838b246d0e35d0b53f4f23f98ba7a1dd561937e64f7d0c7553b0928e376c3e"
+    },
     "developing-genkit-dart": {
       "source": "firebase/agent-skills",
       "sourceType": "github",
@@ -10,6 +22,12 @@
       "source": "firebase/agent-skills",
       "sourceType": "github",
       "computedHash": "2fa9adb27f7cfc4635decebea65222cd56e36b5de34781f7862be888504c04f4"
+    },
+    "emil-design-eng": {
+      "source": "emilkowalski/skill",
+      "sourceType": "github",
+      "skillPath": "skills/emil-design-eng/SKILL.md",
+      "computedHash": "8bdf9e4e6de7a4969147bf4828a4ad2c5aacd9fba4b690b250a85e0467ca387d"
     },
     "firebase-ai-logic": {
       "source": "firebase/agent-skills",
@@ -55,12 +73,6 @@
       "source": "wshobson/agents",
       "sourceType": "github",
       "computedHash": "c6a99966c2565acc388e574039127abc770bb9a3338be761e421e16f023f702b"
-    },
-    "bold-pagos-colombia": {
-      "source": "local",
-      "sourceType": "local",
-      "path": "./skills/bold/SKILL.md",
-      "computedHash": "bold-pagos-colombia-v1-abril2026"
     },
     "sentinel2-ndvi": {
       "source": "local",

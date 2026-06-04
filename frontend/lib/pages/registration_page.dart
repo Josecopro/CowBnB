@@ -8,8 +8,7 @@ import '../services/auth_service.dart';
 class RegistrationPage extends StatefulWidget {
   final String initialRole;
 
-  const RegistrationPage({Key? key, this.initialRole = 'owner'})
-      : super(key: key);
+  const RegistrationPage({super.key, this.initialRole = 'owner'});
 
   @override
   State<RegistrationPage> createState() => _RegistrationPageState();
@@ -84,10 +83,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                   // Title
                   Text(
-                    'Siembra el futuro de tu inversión.',
-                    style: AppTextStyles.headlineLarge.copyWith(
-                      fontSize: 36,
-                    ),
+                    'Siembra el futuro de tu inversion.',
+                    style: AppTextStyles.display,
                     textAlign: TextAlign.start,
                   ),
 
@@ -95,9 +92,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                   // Subtitle
                   Text(
-                    'Únete a la red más grande de gestión de tierras agrícolas. Encuentra el terreno perfecto o rentabiliza tus hectáreas con total seguridad.',
+                    'Unete a la red mas grande de gestion de tierras agricolas. Encuentra el terreno perfecto o rentabiliza tus hectareas con total seguridad.',
                     style: AppTextStyles.body.copyWith(
-                      color: AppColors.textSecondary,
+                      color: AppColors.inkMuted,
                     ),
                   ),
 
@@ -117,7 +114,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         Text(
                           'Comienza tu jornada en el ecosistema digital del campo.',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
+                            color: AppColors.inkMuted,
                           ),
                         ),
 
@@ -125,8 +122,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                         // Role Selection
                         Text(
-                          'SELECCIONA TU ROL',
-                          style: AppTextStyles.labelSmall,
+                          'Selecciona tu rol',
+                          style: AppTextStyles.label,
                         ),
                         const SizedBox(height: AppSpacing.md),
                         _buildRoleSelector(),
@@ -135,14 +132,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                         // Form Fields
                         AppInput(
-                          label: 'NOMBRE COMPLETO',
-                          hint: 'Ej. Juan Pérez',
+                          label: 'Nombre completo',
+                          hint: 'Ej. Juan Perez',
                           controller: nameController,
                         ),
                         const SizedBox(height: AppSpacing.md),
 
                         AppInput(
-                          label: 'CORREO ELECTRÓNICO',
+                          label: 'Correo electronico',
                           hint: 'juan@agro.com',
                           keyboardType: TextInputType.emailAddress,
                           controller: emailController,
@@ -150,7 +147,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         const SizedBox(height: AppSpacing.md),
 
                         AppInput(
-                          label: 'CONTRASEÑA',
+                          label: 'Contrasena',
                           hint: '••••••••',
                           obscureText: true,
                           controller: passwordController,
@@ -161,11 +158,20 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                         if (errorMessage != null) ...[
                           const SizedBox(height: AppSpacing.md),
-                          Text(
-                            errorMessage!,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.error,
-                            ),
+                          Row(
+                            children: [
+                              const Icon(Icons.error_outline,
+                                  color: AppColors.danger, size: 18),
+                              const SizedBox(width: AppSpacing.sm),
+                              Expanded(
+                                child: Text(
+                                  errorMessage!,
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.danger,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
 
@@ -241,11 +247,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           TextSpan(
                             text: 'Al registrarte, aceptas nuestros ',
                             style: AppTextStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
+                              color: AppColors.inkMuted,
                             ),
                             children: [
                               TextSpan(
-                                text: 'Términos de Servicio',
+                                text: 'Terminos de Servicio',
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
@@ -254,11 +260,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
                               TextSpan(
                                 text: ' y la ',
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: AppColors.inkMuted,
                                 ),
                               ),
                               TextSpan(
-                                text: 'Política de Privacidad',
+                                text: 'Politica de Privacidad',
                                 style: AppTextStyles.bodySmall.copyWith(
                                   color: AppColors.primary,
                                   fontWeight: FontWeight.bold,
@@ -267,7 +273,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                               TextSpan(
                                 text: '.',
                                 style: AppTextStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
+                                  color: AppColors.inkMuted,
                                 ),
                               ),
                             ],
@@ -282,9 +288,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
                   // Footer
                   Text(
-                    '© 2026 CowBnB SAS. Inovación para el agro',
+                    '© 2026 CowBnB SAS. Innovacion para el agro',
                     style: AppTextStyles.labelSmall.copyWith(
-                      color: AppColors.textSecondary,
+                      color: AppColors.inkMuted,
                     ),
                   ),
 
@@ -300,7 +306,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   Widget _buildAppBar() {
     return Container(
-      color: AppColors.darkBg.withOpacity(0.8),
+      color: AppColors.darkBg.withValues(alpha: 0.8),
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.md,
@@ -325,17 +331,23 @@ class _RegistrationPageState extends State<RegistrationPage> {
             children: [
               TextButton(
                 onPressed: () {},
-                child: const Text(
+                child: Text(
                   'Explorar',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.onDark.withValues(alpha: 0.7),
+                    fontSize: 14,
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
               TextButton(
                 onPressed: () {},
-                child: const Text(
+                child: Text(
                   'Ayuda',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.onDark.withValues(alpha: 0.7),
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
@@ -353,10 +365,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
     if (email.isEmpty || password.isEmpty) {
       setState(() {
-        errorMessage = 'Completa correo y contraseña.';
+        errorMessage = 'Completa correo y contrasena.';
       });
-      print(
-          '[RegistrationPage] [${DateTime.now().toIso8601String()}] Validation failed: empty email or password');
       return;
     }
 
@@ -364,8 +374,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
       isSubmitting = true;
       errorMessage = null;
     });
-    print(
-        '[RegistrationPage] [${DateTime.now().toIso8601String()}] Registration attempt for email=$email role=$selectedRole');
 
     try {
       await authService.registerWithEmail(
@@ -379,9 +387,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
         phoneNumber: phone.isEmpty ? null : "$selectedPhonePrefix$phone",
       );
 
-      print(
-          '[RegistrationPage] [${DateTime.now().toIso8601String()}] Registration flow completed for email=$email role=$selectedRole');
-
       if (!mounted) return;
       if (selectedRole == 'owner') {
         context.go('/owner');
@@ -394,10 +399,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
         errorMessage = 'No se pudo registrar. Verifica tus datos.';
       });
     } finally {
-      if (!mounted) return;
-      setState(() {
-        isSubmitting = false;
-      });
+      if (mounted) {
+        setState(() {
+          isSubmitting = false;
+        });
+      }
     }
   }
 
@@ -411,7 +417,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               color: selectedRole == 'owner'
-                  ? AppColors.primary.withOpacity(0.05)
+                  ? AppColors.primarySoft
                   : AppColors.surfaceContainer,
               border: Border.all(
                 color: selectedRole == 'owner'
@@ -438,13 +444,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Dueño de terrenos',
+                        'Dueno de terrenos',
                         style: AppTextStyles.label,
                       ),
                       Text(
-                        'Publica tus hectáreas y conecta con arrendatarios calificados para maximizar tu rentabilidad.',
+                        'Publica tus hectareas y conecta con arrendatarios calificados para maximizar tu rentabilidad.',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: AppColors.inkMuted,
                         ),
                       ),
                     ],
@@ -475,7 +481,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
             padding: const EdgeInsets.all(AppSpacing.md),
             decoration: BoxDecoration(
               color: selectedRole == 'renter'
-                  ? AppColors.primary.withOpacity(0.05)
+                  ? AppColors.primarySoft
                   : AppColors.surfaceContainer,
               border: Border.all(
                 color: selectedRole == 'renter'
@@ -507,9 +513,9 @@ class _RegistrationPageState extends State<RegistrationPage> {
                         style: AppTextStyles.label,
                       ),
                       Text(
-                        'Encuentra la tierra ideal para tus proyectos agrícolas con contratos transparentes y seguros.',
+                        'Encuentra la tierra ideal para tus proyectos agricolas con contratos transparentes y seguros.',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: AppColors.inkMuted,
                         ),
                       ),
                     ],
@@ -539,8 +545,8 @@ class _RegistrationPageState extends State<RegistrationPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'TELÉFONO',
-          style: AppTextStyles.labelSmall,
+          'Telefono',
+          style: AppTextStyles.label,
         ),
         const SizedBox(height: AppSpacing.sm),
         Row(
@@ -565,7 +571,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                           child: Text(
                             prefix,
                             style: AppTextStyles.body.copyWith(
-                              color: AppColors.textSecondary,
+                              color: AppColors.inkMuted,
                             ),
                           ),
                         ),
@@ -583,7 +589,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 decoration: InputDecoration(
                   hintText: '300 000 0000',
                   hintStyle: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: AppColors.inkMuted,
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md,

@@ -135,27 +135,35 @@ export class ListingService {
     this.repository = new ListingRepository();
   }
 
-  async createListing(
-    uid: string, 
-    data: { title: string; description: string; size: number; price: number; maintenanceCost?: number; status?: ListingData['status']; features: string[]; }, 
-    imagesBase64: { base64: string; ext: string }[]
-  ): Promise<string> {
-    const imageUrls: string[] = [];
+   async createListing(
+     uid: string, 
+     data: ListingData, 
+     imagesBase64: { base64: string; ext: string }[]
+   ): Promise<string> {
+     const imageUrls: string[] = [];
 
-    for (const img of imagesBase64) {
-      const url = await this.repository.uploadImageBase64(img.base64, img.ext);
-      imageUrls.push(url);
+     for (const img of imagesBase64) {
+       const url = await this.repository.uploadImageBase64(img.base64, img.ext);
+       imageUrls.push(url);
+     }
+
+     const listing: ListingData = {
+       ...data,
+       ownerId: uid,
+       images: imageUrls,
+       createdAt: new Date().toISOString(),
+       // Initialize terrain monitoring fields with default values if not provided
+       estado: data.estado ?? 'disponible',
+       razonEspera: data.razonEspera ?? null,
+       ndviDetectado: data.ndviDetectado ?? null,
+       ndviFecha: data.ndviFecha ?? null,
+       tokenConfirmacion: data.tokenConfirmacion ?? null,
+       tokenExpira: data.tokenExpira ?? null,
+       confirmadoPorArrendatario: data.confirmadoPorArrendatario ?? null,
+     };
+
+      return this.repository.createListing(listing);
     }
-
-    const listing: ListingData = {
-      ...data,
-      ownerId: uid,
-      images: imageUrls,
-      createdAt: new Date().toISOString(),
-    };
-
-    return this.repository.createListing(listing);
-  }
 
   async getAllListings() {
     return this.repository.getAllListings();

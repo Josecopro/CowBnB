@@ -100,12 +100,12 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        'Gestiona tus tierras arrendadas, revisa tus mensajes.',
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                        Text(
+                          'Gestiona tus tierras arrendadas, revisa tus mensajes.',
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: AppColors.inkMuted,
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 ],
@@ -215,7 +215,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
       backgroundColor: AppColors.surfaceContainer,
       child: Icon(
         Icons.person,
-        color: AppColors.textSecondary,
+        color: AppColors.inkMuted,
         size: 18,
       ),
     );
@@ -223,65 +223,52 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
 
   Widget _buildStatsGrid() {
     final reservationCount = reservations.length.toString();
-    return GridView.count(
-      crossAxisCount: 2,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 1.2,
-      mainAxisSpacing: AppSpacing.md,
-      crossAxisSpacing: AppSpacing.md,
+    return Column(
       children: [
-        _buildStatCard(
-          icon: Icons.calendar_month,
-          label: 'Reservas Activas',
+        _buildPrimaryMetric(
+          label: 'Reservas activas',
           value: reservationCount,
-        ),
-        _buildStatCard(
-          icon: Icons.favorite,
-          label: 'Favoritos',
-          value: '0',
-        ),
-        _buildStatCard(
-          icon: Icons.message,
-          label: 'Mensajes',
-          value: '0',
-        ),
-        _buildStatCard(
-          icon: Icons.landscape,
-          label: 'Hectáreas',
-          value: '0',
+          icon: Icons.calendar_month,
         ),
       ],
     );
   }
 
-  Widget _buildStatCard({
-    required IconData icon,
+  Widget _buildPrimaryMetric({
     required String label,
     required String value,
+    required IconData icon,
   }) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.surfaceContainer,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Icon(icon, color: AppColors.primary, size: 24),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            label,
-            style: AppTextStyles.labelSmall,
-            maxLines: 2,
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.primarySoft,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Icon(icon, color: AppColors.primary, size: 24),
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: AppTextStyles.headlineSmall.copyWith(fontSize: 20),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: AppTextStyles.labelSmall),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: AppTextStyles.headline.copyWith(fontSize: 28),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -312,11 +299,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
         ),
         const SizedBox(height: AppSpacing.md),
         if (reservations.isEmpty)
-          const Padding(
-            padding: EdgeInsets.all(AppSpacing.md),
-            child: Text('No hay reservas disponibles',
-                style: TextStyle(color: AppColors.textSecondary)),
-          )
+          _buildEmptyReservations()
         else
           ...reservations.map((res) {
             return Column(
@@ -352,19 +335,19 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
         break;
       case 'active':
         statusText = 'Activo';
-        statusColor = Colors.blue;
+        statusColor = AppColors.info;
         break;
       case 'completed':
         statusText = 'Completado';
-        statusColor = AppColors.textSecondary;
+        statusColor = AppColors.inkMuted;
         break;
       case 'cancelled':
         statusText = 'Cancelado';
-        statusColor = AppColors.error;
+        statusColor = AppColors.danger;
         break;
       default:
         statusText = statusValue;
-        statusColor = AppColors.textSecondary;
+        statusColor = AppColors.inkMuted;
     }
 
     final dates = _formatDateRange(reservation['startDate'], reservation['endDate']);
@@ -376,7 +359,7 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
       onTap: () => context.push('/listing', extra: {'id': reservation['listingId']}),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(AppRadius.lg),
           border: Border.all(color: AppColors.border),
         ),
@@ -397,8 +380,8 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                   return Container(
                     height: 120,
                     width: double.infinity,
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                    color: AppColors.surfaceSunken,
+                    child: const Icon(Icons.image_not_supported, color: AppColors.inkMuted),
                   );
                 },
               ),
@@ -423,8 +406,8 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: statusColor.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20),
+                          color: statusColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
                         ),
                         child: Text(
                           statusText,
@@ -437,12 +420,12 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    '$months mes(es) • Total: \$$total',
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                    Text(
+                      '$months mes(es) • Total: \$$total',
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.inkMuted,
+                      ),
                     ),
-                  ),
                   const SizedBox(height: AppSpacing.md),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -506,63 +489,99 @@ class _DashboardRenterPageState extends State<DashboardRenterPage> {
     return Row(
       children: [
         Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppRadius.xl),
-              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.message, color: AppColors.primary),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  'Centro de Mensajes',
-                  style: AppTextStyles.label,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Tienes 2 conversaciones nuevas',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
+          child: _buildActionCard(
+            icon: Icons.message,
+            title: 'Mensajes',
+            subtitle: 'Chatea con propietarios de tus reservas',
+            background: AppColors.primarySoft,
+            iconColor: AppColors.primaryInk,
+            onTap: () => context.go('/messages'),
           ),
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            decoration: BoxDecoration(
-              color: AppColors.secondary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppRadius.xl),
-              border: Border.all(color: AppColors.secondary.withOpacity(0.2)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(Icons.favorite, color: AppColors.secondary),
-                const SizedBox(height: AppSpacing.md),
-                Text(
-                  'Explorar Favoritos',
-                  style: AppTextStyles.label,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Revisa tus 12 favoritos',
-                  style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
+          child: _buildActionCard(
+            icon: Icons.favorite,
+            title: 'Favoritos',
+            subtitle: 'Revisa los terrenos que guardaste',
+            background: AppColors.accentSoft,
+            iconColor: AppColors.accentHover,
+            onTap: () => context.go('/favorites'),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildActionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color background,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    return Semantics(
+      button: true,
+      label: '$title. $subtitle',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: background,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: iconColor),
+              const SizedBox(height: AppSpacing.md),
+              Text(title, style: AppTextStyles.label),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.inkMuted,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyReservations() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainer,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.event_note_outlined, size: 28, color: AppColors.primary),
+          const SizedBox(height: AppSpacing.md),
+          Text('Aún no tienes reservas',
+              style: AppTextStyles.label),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Explora los terrenos disponibles y confirma tu primer arriendo para verlo aquí.',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.inkMuted,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppButton(
+            label: 'Buscar Tierras',
+            onPressed: () => context.go('/map'),
+            variant: ButtonVariant.primary,
+          ),
+        ],
+      ),
     );
   }
 

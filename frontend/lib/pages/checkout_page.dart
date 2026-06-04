@@ -5,7 +5,6 @@ import '../design_tokens.dart';
 import '../components/app_components.dart';
 import '../components/app_bottom_nav.dart';
 import '../components/optimized_network_image.dart';
-import '../services/listing_service.dart';
 import '../services/reservation_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -29,9 +28,9 @@ class _CheckoutPageState extends State<CheckoutPage> {
       months = (days / 30).ceil();
       if (months <= 0) months = 1;
     }
-    
+
     const double minTaxes = 1000;
-    final int monthlyPrice = int.tryParse(widget.listing['price']?.toString() ?? '1200') ?? 1200;
+    final int monthlyPrice = int.tryParse(widget.listing['price']?.toString() ?? '') ?? 0;
     final double maintenanceMonthly = (widget.listing['maintenanceCost'] as num?)?.toDouble() ?? 0;
     final int subtotal = months * monthlyPrice;
     final double maintenanceTotal = maintenanceMonthly * months;
@@ -40,7 +39,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
     final String imgUrl = (widget.listing['images'] != null && widget.listing['images'] is List && widget.listing['images'].isNotEmpty)
       ? widget.listing['images'][0].toString()
-      : 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop';
+      : '';
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -88,7 +87,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      widget.listing['title']?.toString() ?? 'Sin Titulo',
+                      widget.listing['title']?.toString() ?? 'Terreno sin titulo',
                       style: AppTextStyles.label.copyWith(
                         fontSize: 16,
                       ),
@@ -97,12 +96,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     Row(
                       children: [
                         const Icon(Icons.location_on,
-                            size: 16, color: AppColors.textSecondary),
+                            size: 16, color: AppColors.inkMuted),
                         const SizedBox(width: 4),
                         Text(
-                          '${widget.listing['location']?.toString() ?? 'Cordoba, Argentina'} • ${widget.listing['size']?.toString() ?? '12'} Hectareas',
+                          '${widget.listing['location']?.toString() ?? 'Ubicacion por confirmar'} • ${widget.listing['size']?.toString() ?? '0'} Hectareas',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
+                            color: AppColors.inkMuted,
                           ),
                         ),
                       ],
@@ -148,7 +147,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                 Text(
                                   'Inicio',
                                   style: AppTextStyles.labelSmall.copyWith(
-                                    color: AppColors.textSecondary,
+                                    color: AppColors.inkMuted,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -192,7 +191,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                                 Text(
                                   'Fin',
                                   style: AppTextStyles.labelSmall.copyWith(
-                                    color: AppColors.textSecondary,
+                                    color: AppColors.inkMuted,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -273,7 +272,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     child: Text(
                       'Acepto los términos y condiciones',
                       style: AppTextStyles.body.copyWith(
-                        color: AppColors.textSecondary,
+                        color: AppColors.inkMuted,
                       ),
                     ),
                   ),
@@ -301,6 +300,12 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       );
                       return;
                     }
+                    if (monthlyPrice <= 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Este anuncio no tiene un precio valido.')),
+                      );
+                      return;
+                    }
                     try {
                       final user = FirebaseAuth.instance.currentUser;
                       final displayName = user?.displayName ?? user?.email ?? 'Usuario';
@@ -310,7 +315,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                           : '';
                       await ReservationService().createReservation(
                         listingId: listingId,
-                        listingTitle: widget.listing['title']?.toString() ?? 'Sin título',
+                        listingTitle: widget.listing['title']?.toString() ?? 'Terreno sin titulo',
                         listingImage: image,
                         ownerId: widget.listing['ownerId']?.toString() ?? '',
                         ownerName: '',
@@ -332,7 +337,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                       context.go('/renter');
                     } catch (e) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('No se pudo confirmar la reserva: $e')),
+                        SnackBar(content: Text('No se pudo confirmar la reserva. Intenta de nuevo.')),
                       );
                     }
                   },
@@ -370,7 +375,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
           Text(
             label,
             style: AppTextStyles.body.copyWith(
-              color: AppColors.textSecondary,
+              color: AppColors.inkMuted,
             ),
           ),
           Row(
@@ -379,7 +384,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 Text(
                   'x$qty',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: AppColors.inkMuted,
                   ),
                 ),
               const SizedBox(width: AppSpacing.md),

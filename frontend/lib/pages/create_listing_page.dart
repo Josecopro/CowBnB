@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -11,7 +13,7 @@ import '../services/listing_service.dart';
 import '../services/api_client.dart';
 
 class CreateListingPage extends StatefulWidget {
-  const CreateListingPage({Key? key}) : super(key: key);
+  const CreateListingPage({super.key});
 
   @override
   State<CreateListingPage> createState() => _CreateListingPageState();
@@ -28,6 +30,13 @@ class _CreateListingPageState extends State<CreateListingPage> {
   late TextEditingController maintenanceController;
   late TextEditingController sizeController;
   final Set<String> selectedFeatures = <String>{};
+  
+  // Polygon coordinates for terrain boundaries
+  List<List<double>> _polygonCoordinates = [];
+  bool _isDrawingPolygon = false;
+  LatLng? _lastTappedPoint;
+  final List<Marker> _markers = [];
+  final List<Polygon> _polygons = [];
 
   static const List<_FeatureOption> _featureOptions = [
     _FeatureOption(
@@ -52,6 +61,81 @@ class _CreateListingPageState extends State<CreateListingPage> {
     priceController = TextEditingController();
     maintenanceController = TextEditingController();
     sizeController = TextEditingController();
+  }
+
+  void _toggleDrawingMode() {
+    setState(() {
+      _isDrawingPolygon = !_isDrawingPolygon;
+      if (!_isDrawingPolygon && _polygonCoordinates.length >= 3) {
+        // Close the polygon when finishing
+        if (_polygonCoordinates.first != _polygonCoordinates.last) {
+          _polygonCoordinates.add(_polygonCoordinates.first);
+        }
+        // Update polygon display
+        _updatePolygonDisplay();
+      } else if (_isDrawingPolygon) {
+        // Reset when starting to draw
+        _polygonCoordinates = [];
+        _markers.clear();
+        _polygons.clear();
+        _lastTappedPoint = null;
+      }
+    });
+  }
+
+  void _handleMapTap(TapPosition tapPosition, LatLng latLng) {
+    if (!_isDrawingPolygon) return;
+
+    setState(() {
+      _polygonCoordinates.add([latLng.longitude, latLng.latitude]);
+      _markers.add(
+        Marker(
+          point: latLng,
+          width: 40,
+          height: 40,
+          child: const Icon(
+            Icons.location_on,
+            color: Colors.red,
+            size: 30,
+          ),
+        ),
+      );
+      _lastTappedPoint = latLng;
+      
+      // Update polygon display if we have at least 2 points
+      if (_polygonCoordinates.length >= 2) {
+        _updatePolygonDisplay();
+      }
+    });
+  }
+
+  void _updatePolygonDisplay() {
+    if (_polygonCoordinates.length < 3) return;
+
+    // Convert [lng, lat] to LatLng for polygon
+    final LatLngList latLngList = _polygonCoordinates
+        .map((coord) => LatLng(coord[1], coord[0]))
+        .toList();
+
+    setState(() {
+      _polygons = [
+        Polygon(
+          points: latLngList,
+          color: AppColors.success.withValues(alpha: 0.2),
+          borderColor: AppColors.success,
+          borderStrokeWidth: 2,
+        )
+      ];
+    });
+  }
+
+  void _clearPolygon() {
+    setState(() {
+      _polygonCoordinates = [];
+      _markers.clear();
+      _polygons.clear();
+      _lastTappedPoint = null;
+    });
   }
 
   @override
@@ -84,60 +168,70 @@ class _CreateListingPageState extends State<CreateListingPage> {
     });
   }
 
-  Future<void> _submitListing() async {
-    if (titleController.text.trim().isEmpty ||
-        priceController.text.trim().isEmpty ||
-        maintenanceController.text.trim().isEmpty ||
-        sizeController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Por favor completa todos los campos requeridos')),
-      );
-      return;
-    }
+   Future<void> _submitListing() async {
+     if (titleController.text.trim().isEmpty ||
+         priceController.text.trim().isEmpty ||
+         maintenanceController.text.trim().isEmpty ||
+         sizeController.text.trim().isEmpty) {
+       ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(
+             content: Text('Por favor completa todos los campos requeridos')),
+       );
+       return;
+     }
 
-    setState(() => _isLoading = true);
+     // Validate that we have polygon coordinates if drawing was enabled
+     if (_isDrawingPolygon && _polygonCoordinates.length < 3) {
+       ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(
+             content: Text('Por favor dibuja al menos 3 puntos para delimitar el terreno')),
+       );
+       return;
+     }
 
-    try {
-      final apiClient =
-          ApiClient(baseUrl: AppConfig.apiBaseUrl); // Using global config
-      final service = ListingService(apiClient: apiClient);
+     setState(() => _isLoading = true);
 
-      List<Map<String, String>> imagesBase64 = [];
-      for (final file in _images) {
-        final bytes = await file.readAsBytes();
-        final ext = file.name.split('.').last.toLowerCase();
-        imagesBase64.add(
-            {'base64': base64Encode(bytes), 'ext': ext.isEmpty ? 'jpg' : ext});
-      }
+     try {
+       final apiClient =
+           ApiClient(baseUrl: AppConfig.apiBaseUrl); // Using global config
+       final service = ListingService(apiClient: apiClient);
 
-      await service.createListing(
-        title: titleController.text.trim(),
-        description: descriptionController.text.trim(),
-        size: num.tryParse(sizeController.text.trim()) ?? 0,
-        price: num.tryParse(priceController.text.trim()) ?? 0,
-        maintenanceCost: num.tryParse(maintenanceController.text.trim()) ?? 0,
-        status: "active",
-        features: selectedFeatures.toList(),
-        imagesBase64: imagesBase64,
-      );
+       List<Map<String, String>> imagesBase64 = [];
+       for (final file in _images) {
+         final bytes = await file.readAsBytes();
+         final ext = file.name.split('.').last.toLowerCase();
+         imagesBase64.add(
+             {'base64': base64Encode(bytes), 'ext': ext.isEmpty ? 'jpg' : ext});
+       }
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('¡Anuncio publicado con éxito!')),
-        );
-        context.go('/owner');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al publicar: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
+       await service.createListing(
+         title: titleController.text.trim(),
+         description: descriptionController.text.trim(),
+         size: num.tryParse(sizeController.text.trim()) ?? 0,
+         price: num.tryParse(priceController.text.trim()) ?? 0,
+         maintenanceCost: num.tryParse(maintenanceController.text.trim()) ?? 0,
+         status: "active",
+         features: selectedFeatures.toList(),
+         imagesBase64: imagesBase64,
+         coordenadas: _polygonCoordinates, // Add polygon coordinates
+       );
+
+       if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text('¡Anuncio publicado con éxito!')),
+         );
+         context.go('/owner');
+       }
+     } catch (e) {
+       if (mounted) {
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text('Error al publicar: $e')),
+         );
+       }
+     } finally {
+       if (mounted) setState(() => _isLoading = false);
+     }
+   }
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +293,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.black54,
+              color: AppColors.ink.withValues(alpha: 0.54),
               child: const Center(child: CircularProgressIndicator()),
             ),
         ],
@@ -280,94 +374,163 @@ class _CreateListingPageState extends State<CreateListingPage> {
     );
   }
 
-  Widget _buildStep3() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Galería de Imágenes', style: AppTextStyles.headlineSmall),
-        const SizedBox(height: AppSpacing.lg),
-        GestureDetector(
-          onTap: () => _pickImages(),
-          child: Container(
-            width: double.infinity,
-            height: _images.isNotEmpty ? null : 200,
-            constraints: const BoxConstraints(minHeight: 120),
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceContainer,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              border:
-                  Border.all(color: AppColors.border, style: BorderStyle.solid),
-            ),
-            child: _images.isEmpty
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.image,
-                          size: 48, color: AppColors.primary),
-                      const SizedBox(height: AppSpacing.md),
-                      Text('Sube hasta 10 imágenes',
-                          style: AppTextStyles.label),
-                      const SizedBox(height: AppSpacing.sm),
-                      Text('Toca para seleccionar archivos',
-                          style: AppTextStyles.bodySmall
-                              .copyWith(color: AppColors.textSecondary)),
-                    ],
-                  )
-                : Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      for (int i = 0; i < _images.length; i++)
-                        Stack(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(AppRadius.sm),
-                              child: kIsWeb
-                                  ? Image.network(_images[i].path,
-                                      width: 80, height: 80, fit: BoxFit.cover)
-                                  : Image.file(File(_images[i].path),
-                                      width: 80, height: 80, fit: BoxFit.cover),
-                            ),
-                            Positioned(
-                              right: 0,
-                              top: 0,
-                              child: GestureDetector(
-                                onTap: () => _removeImage(i),
-                                child: Container(
-                                  padding: const EdgeInsets.all(2),
-                                  decoration: const BoxDecoration(
-                                      color: Colors.red,
-                                      shape: BoxShape.circle),
-                                  child: const Icon(Icons.close,
-                                      size: 14, color: Colors.white),
+   Widget _buildStep3() {
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+         Text('Galería de Imágenes', style: AppTextStyles.headlineSmall),
+         const SizedBox(height: AppSpacing.lg),
+         GestureDetector(
+           onTap: () => _pickImages(),
+           child: Container(
+             width: double.infinity,
+             height: _images.isNotEmpty ? null : 200,
+             constraints: const BoxConstraints(minHeight: 120),
+             padding: const EdgeInsets.all(AppSpacing.md),
+             decoration: BoxDecoration(
+               color: AppColors.surfaceContainer,
+               borderRadius: BorderRadius.circular(AppRadius.lg),
+               border:
+                   Border.all(color: AppColors.border, style: BorderStyle.solid),
+             ),
+              child: _images.isEmpty
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.image,
+                            size: 48, color: AppColors.primary),
+                        const SizedBox(height: AppSpacing.md),
+                        Text('Sube hasta 10 imagenes',
+                            style: AppTextStyles.label),
+                        const SizedBox(height: AppSpacing.sm),
+                        Text('Toca para seleccionar archivos',
+                            style: AppTextStyles.bodySmall
+                                .copyWith(color: AppColors.inkMuted)),
+                      ],
+                    )
+                 : Wrap(
+                     spacing: 8,
+                     runSpacing: 8,
+                     children: [
+                       for (int i = 0; i < _images.length; i++)
+                         Stack(
+                           children: [
+                             ClipRRect(
+                               borderRadius: BorderRadius.circular(AppRadius.sm),
+                               child: kIsWeb
+                                   ? Image.network(_images[i].path,
+                                       width: 80, height: 80, fit: BoxFit.cover)
+                                   : Image.file(File(_images[i].path),
+                                       width: 80, height: 80, fit: BoxFit.cover),
+                             ),
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: GestureDetector(
+                                  onTap: () => _removeImage(i),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: const BoxDecoration(
+                                        color: AppColors.danger,
+                                        shape: BoxShape.circle),
+                                    child: const Icon(Icons.close,
+                                        size: 14, color: Colors.white),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      if (_images.length < 10)
-                        GestureDetector(
-                          onTap: () => _pickImages(),
-                          child: Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(AppRadius.sm),
-                              border: Border.all(color: AppColors.primary),
-                            ),
-                            child:
-                                const Icon(Icons.add, color: AppColors.primary),
-                          ),
-                        ),
-                    ],
+                           ],
+                         ),
+                       if (_images.length < 10)
+                         GestureDetector(
+                           onTap: () => _pickImages(),
+                           child: Container(
+                             width: 80,
+                             height: 80,
+                             decoration: BoxDecoration(
+                               color: AppColors.surface,
+                               borderRadius: BorderRadius.circular(AppRadius.sm),
+                               border: Border.all(color: AppColors.primary),
+                             ),
+                             child:
+                                 const Icon(Icons.add, color: AppColors.primary),
+                           ),
+                         ),
+                     ],
+                   ),
+           ),
+         ),
+         const SizedBox(height: AppSpacing.lg),
+         Text('Límites del Terreno', style: AppTextStyles.headlineSmall),
+         const SizedBox(height: AppSpacing.md),
+         Container(
+           height: 300,
+           width: double.infinity,
+           decoration: BoxDecoration(
+             borderRadius: BorderRadius.circular(AppRadius.lg),
+             border: Border.all(color: AppColors.border),
+           ),
+           child: FlutterMap(
+             options: MapOptions(
+               center: LatLng(-34.6037, -58.3816), // Default to Buenos Aires
+               zoom: 13,
+               onTap: _isDrawingPolygon ? _handleMapTap : null,
+             ),
+             children: [
+               TileLayer(
+                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+               ),
+               PolygonLayer(
+                 polygons: _polygons,
+               ),
+               MarkerLayer(
+                 markers: _markers,
+               ),
+             ],
+           ),
+         ),
+         const SizedBox(height: AppSpacing.md),
+         Row(
+           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+           children: [
+              ElevatedButton(
+                onPressed: _toggleDrawingMode,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isDrawingPolygon
+                      ? AppColors.primary
+                      : AppColors.surfaceContainer,
+                  foregroundColor: _isDrawingPolygon
+                      ? Colors.white
+                      : AppColors.inkMuted,
+                ),
+                child: Text(
+                  _isDrawingPolygon ? 'Finalizar Dibujo' : 'Dibujar Limites',
+                  style: TextStyle(fontSize: 14),
+                ),
+              ),
+              if (_polygonCoordinates.isNotEmpty)
+                ElevatedButton(
+                  onPressed: _clearPolygon,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.danger,
+                    foregroundColor: Colors.white,
                   ),
+                  child: const Text('Limpiar', style: TextStyle(fontSize: 14)),
+                ),
+            ],
           ),
-        ),
-      ],
-    );
-  }
+          if (_polygonCoordinates.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Text(
+                'Coordenadas: ${_polygonCoordinates.length} puntos',
+                style: AppTextStyles.labelSmall.copyWith(
+                  color: AppColors.inkMuted,
+                ),
+              ),
+            ),
+        ],
+      );
+    }
 
   Widget _buildCheckboxItem(_FeatureOption option) {
     final bool isSelected = selectedFeatures.contains(option.label);
@@ -378,7 +541,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
             ? selectedFeatures.remove(option.label)
             : selectedFeatures.add(option.label)),
         borderRadius: BorderRadius.circular(AppRadius.md),
-        child: Container(
+          child: Container(
           padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md, vertical: AppSpacing.sm),
           decoration: BoxDecoration(
@@ -393,7 +556,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
             children: [
               Icon(option.icon,
                   color:
-                      isSelected ? AppColors.primary : AppColors.textSecondary,
+                      isSelected ? AppColors.primary : AppColors.inkMuted,
                   size: 22),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -401,9 +564,9 @@ class _CreateListingPageState extends State<CreateListingPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(option.label, style: AppTextStyles.body),
-                    Text('Categoría: ${option.category}',
+                    Text('Categoria: ${option.category}',
                         style: AppTextStyles.bodySmall
-                            .copyWith(color: AppColors.textSecondary)),
+                            .copyWith(color: AppColors.inkMuted)),
                   ],
                 ),
               ),

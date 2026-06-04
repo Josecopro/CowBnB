@@ -29,4 +29,13 @@ export interface ListingData {
   crops?: string;
   amenities?: string[];
   totalArea?: number;
+  // NDVI and terrain monitoring fields
+  coordenadas?: number[][]; // Polygon coordinates [ [lng, lat], ... ]
+  estado?: 'disponible' | 'reservado' | 'en_espera' | 'inactivo';
+  razonEspera?: 'ndvi_alto' | null;
+  ndviDetectado?: number | null;
+  ndviFecha?: string | null; // ISO string of the latest NDVI reading
+  tokenConfirmacion?: string | null;
+  tokenExpira?: string | null; // ISO string
+  confirmadoPorArrendatario?: boolean | null;
 }

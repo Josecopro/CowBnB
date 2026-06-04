@@ -70,7 +70,9 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
       try {
         final profile = await authService.getProfile();
         if(profile != null) currentEarn = profile.currentMonthEarnings ?? 0;
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('Profile load failed: $e');
+      }
       if (!mounted) return;
       setState(() {
         myListings = listings;
@@ -177,15 +179,8 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary.withOpacity(0.8),
-                      AppColors.primaryDark,
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(AppRadius.xl),
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,18 +191,19 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                         Text(
                           'Ingresos Mensuales',
                           style: AppTextStyles.label.copyWith(
-                            color: Colors.white70,
+                            color: AppColors.onDark.withValues(alpha: 0.8),
                           ),
                         ),
                         Icon(Icons.trending_up,
-                            color: Colors.white70, size: 20),
+                            color: AppColors.onDark.withValues(alpha: 0.8),
+                            size: 20),
                       ],
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
                       '\$$earningsValue',
                       style: AppTextStyles.headlineLarge.copyWith(
-                        color: Colors.white,
+                        color: AppColors.onPrimary,
                         fontSize: 36,
                       ),
                     ),
@@ -215,7 +211,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                     Text(
                       '$occupancyRate% ocupacion',
                       style: AppTextStyles.bodySmall.copyWith(
-                        color: Colors.white70,
+                        color: AppColors.onDark.withValues(alpha: 0.8),
                       ),
                     ),
                   ],
@@ -224,7 +220,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
 
               const SizedBox(height: AppSpacing.lg),
 
-              // Stats Grid
+              // Primary metric row (single hero metric, secondary in dividers)
               (() {
                 final fallbackViews = myListings.fold<int>(0, (sum, l) => sum + ((l['views'] as num?)?.toInt() ?? 0));
                 final totalViews = profile?.totalViews?.toInt() ?? fallbackViews;
@@ -234,36 +230,34 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                 }).toList();
                 final renterIds = rentedListings
                     .map((listing) => listing['renterId']?.toString())
-                    .where((id) => id != null && id!.isNotEmpty)
+                    .where((id) => id != null && id.isNotEmpty)
                     .toSet();
-                return GridView.count(
-                  crossAxisCount: 2,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  childAspectRatio: 1.2,
+                return Column(
                   children: [
-                    _buildStatCard(
-                      icon: Icons.home,
-                      label: 'Propiedades',
+                    // Primary metric
+                    _buildPrimaryMetric(
+                      label: 'Propiedades publicadas',
                       value: isLoadingListings
                           ? '...'
                           : myListings.length.toString().padLeft(2, '0'),
+                      icon: Icons.landscape,
                     ),
-                    _buildStatCard(
-                      icon: Icons.check_circle,
-                      label: 'Reservas Activas',
-                      value: rentedListings.length.toString(),
-                    ),
-                    _buildStatCard(
-                      icon: Icons.people,
-                      label: 'Arrendatarios',
-                      value: renterIds.length.toString(),
-                    ),
-                    _buildStatCard(
-                      icon: Icons.visibility,
-                      label: 'Visualizaciones',
-                      value: totalViews.toString(),
-                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    // Secondary metrics in a row, dividers (no card chrome)
+                    _buildMetricRow([
+                      _MetricSpec(
+                        label: 'Reservas',
+                        value: rentedListings.length.toString(),
+                      ),
+                      _MetricSpec(
+                        label: 'Arrendatarios',
+                        value: renterIds.length.toString(),
+                      ),
+                      _MetricSpec(
+                        label: 'Visitas',
+                        value: totalViews.toString(),
+                      ),
+                    ]),
                   ],
                 );
               })(),
@@ -299,10 +293,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                   child: CircularProgressIndicator(),
                 ))
               else if (myListings.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  child: Text('Aún no tienes propiedades publicadas.'),
-                )
+                _buildEmptyProperties()
               else
                 ...myListings.map((listing) {
                   return Padding(
@@ -332,10 +323,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                   child: CircularProgressIndicator(),
                 ))
               else if (myReservations.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.all(AppSpacing.md),
-                  child: Text('No hay reservas aún.', style: TextStyle(color: AppColors.textSecondary)),
-                )
+                _buildEmptyReservations()
               else
                 ...myReservations.map((res) {
                   return Padding(
@@ -362,7 +350,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: AppColors.border),
       ),
@@ -373,7 +361,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
             ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.md),
               child: Image.network(image, width: 60, height: 60, fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Container(width: 60, height: 60, color: Colors.grey[200]),
+                errorBuilder: (_, __, ___) => Container(width: 60, height: 60, color: AppColors.surfaceSunken),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -465,42 +453,79 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
       backgroundColor: AppColors.surfaceContainer,
       child: Icon(
         Icons.person,
-        color: AppColors.textSecondary,
+        color: AppColors.inkMuted,
         size: 18,
       ),
     );
   }
 
-  Widget _buildStatCard({
-    required IconData icon,
+  Widget _buildPrimaryMetric({
     required String label,
     required String value,
+    required IconData icon,
   }) {
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.surfaceContainer,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Icon(icon, color: AppColors.primary, size: 24),
-          const SizedBox(height: AppSpacing.sm),
-          Text(
-            label,
-            style: AppTextStyles.labelSmall,
-            maxLines: 2,
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppColors.primarySoft,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            child: Icon(icon, color: AppColors.primary, size: 24),
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: AppTextStyles.headlineSmall.copyWith(fontSize: 20),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: AppTextStyles.labelSmall),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: AppTextStyles.headline.copyWith(fontSize: 28),
+                ),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildMetricRow(List<_MetricSpec> metrics) {
+    return Row(
+      children: [
+        for (var i = 0; i < metrics.length; i++) ...[
+          if (i > 0)
+            Container(
+              width: 1,
+              height: 36,
+              color: AppColors.border,
+              margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(metrics[i].label, style: AppTextStyles.labelSmall),
+                const SizedBox(height: 4),
+                Text(
+                  metrics[i].value,
+                  style: AppTextStyles.title,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -533,10 +558,10 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
     Color statusColor = AppColors.success;
     String status = 'Activo';
     if (statusValue == 'rented') {
-      statusColor = Colors.blue;
+      statusColor = AppColors.info;
       status = 'Arrendado';
     } else if (statusValue == 'review') {
-      statusColor = Colors.orange;
+      statusColor = AppColors.warning;
       status = 'En Revisi\u00f3n';
     }
 
@@ -549,7 +574,7 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
       },
       child: Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: AppColors.border),
       ),
@@ -580,8 +605,8 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(20),
+                    color: statusColor.withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
                   ),
                   child: Text(
                     status,
@@ -661,4 +686,76 @@ class _DashboardOwnerPageState extends State<DashboardOwnerPage> {
     ),
     );
   }
+
+  Widget _buildEmptyProperties() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainer,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.landscape_outlined,
+              size: 28, color: AppColors.primary),
+          const SizedBox(height: AppSpacing.md),
+          Text('Aún no has publicado terrenos',
+              style: AppTextStyles.label),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Publica tu primera hectarea para empezar a recibir reservas de arrendatarios calificados.',
+            style: AppTextStyles.bodySmall.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          AppButton(
+            label: 'Crear Anuncio',
+            onPressed: () => context.go('/create-listing'),
+            variant: ButtonVariant.primary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyReservations() {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainer,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.event_note_outlined,
+              size: 28, color: AppColors.inkMuted),
+          const SizedBox(width: AppSpacing.md),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Sin reservas todavía',
+                    style: AppTextStyles.label),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Las solicitudes de arrendatarios aparecerán aquí en cuanto lleguen.',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MetricSpec {
+  final String label;
+  final String value;
+  const _MetricSpec({required this.label, required this.value});
 }

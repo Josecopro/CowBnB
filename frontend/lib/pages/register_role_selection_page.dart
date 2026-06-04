@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../design_tokens.dart';
 
 class RegisterRoleSelectionPage extends StatelessWidget {
-  const RegisterRoleSelectionPage({Key? key}) : super(key: key);
+  const RegisterRoleSelectionPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class RegisterRoleSelectionPage extends StatelessWidget {
           children: [
             // Top AppBar
             Container(
-              color: AppColors.darkBg.withOpacity(0.8),
+              color: AppColors.darkBg.withValues(alpha: 0.8),
               padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md,
                 vertical: AppSpacing.md,
@@ -55,10 +55,8 @@ class RegisterRoleSelectionPage extends StatelessWidget {
 
                   // Title
                   Text(
-                    '¿Qué deseas hacer?',
-                    style: AppTextStyles.headlineLarge.copyWith(
-                      fontSize: 36,
-                    ),
+                    '¿Que deseas hacer?',
+                    style: AppTextStyles.display,
                     textAlign: TextAlign.center,
                   ),
 
@@ -68,13 +66,12 @@ class RegisterRoleSelectionPage extends StatelessWidget {
                   Text(
                     'Elige tu rol en la plataforma para continuar',
                     style: AppTextStyles.body.copyWith(
-                      color: AppColors.textSecondary,
+                      color: AppColors.inkMuted,
                     ),
                     textAlign: TextAlign.center,
                   ),
 
                   const SizedBox(height: AppSpacing.xl),
-                  const SizedBox(height: AppSpacing.lg),
 
                   // Option 1: Owner / Arrendar tierra
                   _buildRoleCard(
@@ -82,10 +79,11 @@ class RegisterRoleSelectionPage extends StatelessWidget {
                     icon: Icons.landscape,
                     title: 'Arrendar mi tierra',
                     description:
-                        'Soy propietario y quiero rentabilizar mis tierras agrícolas',
+                        'Soy propietario y quiero rentabilizar mis tierras agricolas',
                     role: 'owner',
-                    backgroundColor: AppColors.primary.withOpacity(0.1),
+                    backgroundColor: AppColors.primarySoft,
                     borderColor: AppColors.primary,
+                    iconColor: AppColors.primaryInk,
                   ),
 
                   const SizedBox(height: AppSpacing.lg),
@@ -98,32 +96,32 @@ class RegisterRoleSelectionPage extends StatelessWidget {
                     description:
                         'Soy inquilino y busco tierras para arrendar y cultivar',
                     role: 'renter',
-                    backgroundColor: AppColors.success.withOpacity(0.1),
-                    borderColor: AppColors.success,
+                    backgroundColor: AppColors.accentSoft,
+                    borderColor: AppColors.accent,
+                    iconColor: AppColors.accentHover,
                   ),
 
                   const SizedBox(height: AppSpacing.xl),
-                  const SizedBox(height: AppSpacing.lg),
 
                   // Info Section
                   Container(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     decoration: BoxDecoration(
-                      color: AppColors.border.withOpacity(0.1),
+                      color: AppColors.surfaceContainer,
                       borderRadius: BorderRadius.circular(AppRadius.lg),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Puedes cambiar tu rol después',
+                          'Puedes cambiar tu rol despues',
                           style: AppTextStyles.labelSmall,
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
-                          'Tu selección no es definitiva. Podrás cambiar entre roles o manejar ambos desde tu perfil una vez que hayas creado tu cuenta.',
+                          'Tu seleccion no es definitiva. Podras cambiar entre roles o manejar ambos desde tu perfil una vez que hayas creado tu cuenta.',
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: AppColors.textSecondary,
+                            color: AppColors.inkMuted,
                           ),
                         ),
                       ],
@@ -139,9 +137,9 @@ class RegisterRoleSelectionPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Text(
-                '© 2026 CowBnB SAS. Inovación para el agro',
+                '© 2026 CowBnB SAS. Innovacion para el agro',
                 style: AppTextStyles.labelSmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: AppColors.inkMuted,
                 ),
               ),
             ),
@@ -159,72 +157,76 @@ class RegisterRoleSelectionPage extends StatelessWidget {
     required String role,
     required Color backgroundColor,
     required Color borderColor,
+    required Color iconColor,
   }) {
-    return GestureDetector(
-      onTap: () => context.push('/register?role=$role'),
-      child: Container(
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          border: Border.all(color: borderColor, width: 2),
-          borderRadius: BorderRadius.circular(AppRadius.lg),
-        ),
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Row(
-          children: [
-            // Icon Container
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: borderColor.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(AppRadius.md),
+    return Semantics(
+      button: true,
+      label: '$title. $description',
+      child: InkWell(
+        onTap: () => context.push('/register?role=$role'),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: Container(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            border: Border.all(color: borderColor, width: 2),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Row(
+            children: [
+              // Icon Container
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: borderColor.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Icon(
+                  icon,
+                  size: 32,
+                  color: iconColor,
+                ),
               ),
-              child: Icon(
-                icon,
-                size: 40,
-                color: borderColor,
-              ),
-            ),
 
-            const SizedBox(width: AppSpacing.lg),
+              const SizedBox(width: AppSpacing.lg),
 
-            // Text Section
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: AppTextStyles.headlineSmall.copyWith(
-                      color: AppColors.textPrimary,
+              // Text Section
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTextStyles.headlineSmall,
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    description,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      description,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.inkMuted,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            // Arrow
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: borderColor,
-                borderRadius: BorderRadius.circular(AppRadius.md),
+              // Arrow
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: borderColor,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: const Icon(
+                  Icons.arrow_forward,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
-              child: Icon(
-                Icons.arrow_forward,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

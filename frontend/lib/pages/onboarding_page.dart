@@ -29,18 +29,9 @@ class OnboardingPage extends StatelessWidget {
                     fit: BoxFit.cover,
                     memCacheWidth: 1280,
                   ),
-                  // Gradient Overlay
+                  // Scrim overlay (single solid color, not gradient)
                   Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          AppColors.darkBg.withOpacity(0.8),
-                        ],
-                      ),
-                    ),
+                    color: AppColors.darkBg.withValues(alpha: 0.45),
                   ),
                   // Floating Card
                   Positioned(
@@ -70,19 +61,19 @@ class OnboardingPage extends StatelessWidget {
                       vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(20),
+                      color: AppColors.primarySoft,
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         const Icon(Icons.trending_up,
-                            size: 16, color: AppColors.primary),
+                            size: 16, color: AppColors.primaryInk),
                         const SizedBox(width: AppSpacing.sm),
                         Text(
-                          'AGRO-INVERSION 2.0',
+                          'Nueva temporada disponible',
                           style: AppTextStyles.labelSmall.copyWith(
-                            color: AppColors.primary,
+                            color: AppColors.primaryInk,
                           ),
                         ),
                       ],
@@ -247,7 +238,7 @@ class OnboardingPage extends StatelessWidget {
 
   Widget _buildAppBar(BuildContext context) {
     return Container(
-      color: AppColors.darkBg.withOpacity(0.8),
+      color: AppColors.darkBg.withValues(alpha: 0.8),
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
         vertical: AppSpacing.md,
@@ -272,17 +263,23 @@ class OnboardingPage extends StatelessWidget {
             children: [
               TextButton(
                 onPressed: () {},
-                child: const Text(
+                child: Text(
                   'Soporte',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.onDark.withValues(alpha: 0.7),
+                    fontSize: 14,
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
               TextButton(
                 onPressed: () {},
-                child: const Text(
+                child: Text(
                   'Idioma',
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: AppTextStyles.label.copyWith(
+                    color: AppColors.onDark.withValues(alpha: 0.7),
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
@@ -296,15 +293,8 @@ class OnboardingPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.darkBg.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -315,7 +305,7 @@ class OnboardingPage extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.2),
+                  color: AppColors.primarySoft,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: const Icon(Icons.eco, color: AppColors.primary),
@@ -354,13 +344,13 @@ class OnboardingPage extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
                 child: Text(
                   'Certificacion organica',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.primary,
+                    color: AppColors.primaryInk,
                     fontSize: 10,
                   ),
                 ),
@@ -372,13 +362,13 @@ class OnboardingPage extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.secondary.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.accentSoft,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
                 child: Text(
                   'Derechos de agua',
                   style: AppTextStyles.labelSmall.copyWith(
-                    color: AppColors.secondary,
+                    color: AppColors.accentHover,
                     fontSize: 10,
                   ),
                 ),
@@ -399,7 +389,6 @@ class OnboardingPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: AppColors.border),
       ),
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(

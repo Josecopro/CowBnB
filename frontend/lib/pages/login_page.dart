@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../design_tokens.dart';
 import '../services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
@@ -104,9 +105,9 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAF9),
+      backgroundColor: AppColors.surface,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1D3325),
+        backgroundColor: AppColors.darkBg,
         title: const Text('Iniciar Sesión'),
       ),
       body: SingleChildScrollView(
@@ -117,29 +118,35 @@ class _LoginPageState extends State<LoginPage> {
             const SizedBox(height: 48),
             Text(
               'Bienvenido de vuelta',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF454D48),
-              ),
+              style: AppTextStyles.display,
             ),
             const SizedBox(height: 8),
             Text(
               'Ingresa tus credenciales para continuar',
-              style: TextStyle(
-                fontSize: 16,
-                color: const Color(0xFF8A918D),
+              style: AppTextStyles.body.copyWith(
+                color: AppColors.inkMuted,
               ),
             ),
             const SizedBox(height: 48),
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
-                labelText: 'Correo electrónico',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                labelText: 'Correo electronico',
+                hintStyle: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.inkMuted,
                 ),
-                prefixIcon: const Icon(Icons.email),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                ),
+                prefixIcon: const Icon(Icons.email, color: AppColors.inkMuted),
               ),
               keyboardType: TextInputType.emailAddress,
             ),
@@ -147,20 +154,41 @@ class _LoginPageState extends State<LoginPage> {
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(
-                labelText: 'Contraseña',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                labelText: 'Contrasena',
+                hintStyle: AppTextStyles.bodySmall.copyWith(
+                  color: AppColors.inkMuted,
                 ),
-                prefixIcon: const Icon(Icons.lock),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderSide: const BorderSide(color: AppColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                ),
+                prefixIcon: const Icon(Icons.lock, color: AppColors.inkMuted),
               ),
               obscureText: true,
               onSubmitted: (_) => _handleLogin(),
             ),
             if (_errorMessage != null) ...[
               const SizedBox(height: 16),
-              Text(
-                _errorMessage!,
-                style: const TextStyle(color: Color(0xFFD64545)),
+              Row(
+                children: [
+                  const Icon(Icons.error_outline, color: AppColors.danger, size: 18),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      _errorMessage!,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: AppColors.danger,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
             const SizedBox(height: 24),
@@ -169,9 +197,9 @@ class _LoginPageState extends State<LoginPage> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleLogin,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF5CA275),
+                  backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadius.lg),
                   ),
                 ),
                 child: _isLoading
@@ -183,25 +211,35 @@ class _LoginPageState extends State<LoginPage> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        'Iniciar Sesión',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+                    : Text(
+                        'Iniciar Sesion',
+                        style: AppTextStyles.label.copyWith(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
                       ),
               ),
             ),
             const SizedBox(height: 16),
             TextButton(
               onPressed: _handlePasswordReset,
-              child: const Text('¿Olvidaste tu contraseña?'),
+              child: Text(
+                '¿Olvidaste tu contrasena?',
+                style: AppTextStyles.label.copyWith(color: AppColors.primary),
+              ),
             ),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text("¿No tienes cuenta?"),
+                Text('¿No tienes cuenta?',
+                    style: AppTextStyles.body.copyWith(color: AppColors.inkMuted)),
                 TextButton(
                   onPressed: () => context.go('/register-role'),
-                  child: const Text('Regístrate'),
+                  child: Text(
+                    'Registrate',
+                    style: AppTextStyles.label.copyWith(color: AppColors.primary),
+                  ),
                 ),
               ],
             ),

@@ -1,5 +1,7 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { app } from "./app";
+import { monitoreoNDVI } from "./jobs/ndviMonitor";
+import { confirmarEstadoTerreno } from "./terrenos/confirmarEstado";
 
 export const api = onRequest(async (req, res) => {
 	const host = req.headers.host ?? "localhost";
@@ -25,3 +27,5 @@ export const api = onRequest(async (req, res) => {
 	const buffer = Buffer.from(await response.arrayBuffer());
 	res.send(buffer);
 });
+
+export { monitoreoNDVI, confirmarEstadoTerreno };
