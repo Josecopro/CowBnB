@@ -36,7 +36,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
   bool _isDrawingPolygon = false;
   LatLng? _lastTappedPoint;
   final List<Marker> _markers = [];
-  final List<Polygon> _polygons = [];
+  List<Polygon> _polygons = [];
 
   static const List<_FeatureOption> _featureOptions = [
     _FeatureOption(
@@ -113,7 +113,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
     if (_polygonCoordinates.length < 3) return;
 
     // Convert [lng, lat] to LatLng for polygon
-    final LatLngList latLngList = _polygonCoordinates
+    final List<LatLng> latLngList = _polygonCoordinates
         .map((coord) => LatLng(coord[1], coord[0]))
         .toList();
 

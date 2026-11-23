@@ -8,12 +8,19 @@ import '../components/optimized_network_image.dart';
 import '../services/listing_service.dart';
 import '../services/auth_service.dart';
 import '../services/chat_service.dart';
+import '../services/reservation_service.dart';
 
 enum _ListingStatus { active, rented, review, unknown }
 
 class ListingDetailsPage extends StatefulWidget {
   final Map<String, dynamic> listing;
-  const ListingDetailsPage({super.key, required this.listing});
+  final bool isReservationView;
+
+  const ListingDetailsPage({
+    super.key,
+    required this.listing,
+    this.isReservationView = false,
+  });
 
   @override
   State<ListingDetailsPage> createState() => _ListingDetailsPageState();
@@ -119,6 +126,10 @@ class _ListingDetailsPageState extends State<ListingDetailsPage> {
       if (!mounted) return;
       setState(() => _hasBooking = hasBooking);
     } catch (_) {}
+  }
+
+  Future<void> _loadExistingConversation() async {
+    await _checkBooking();
   }
 
   void _startCarouselTimer() {

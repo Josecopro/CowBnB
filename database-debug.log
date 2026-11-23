@@ -1,8 +1,8 @@
-18:28:17.694 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
-18:28:17.935 [main] INFO com.firebase.server.forge.App$ - Listening at 127.0.0.1:9000
-18:28:31.086 [NamespaceSystem-akka.actor.default-dispatcher-4] INFO com.firebase.core.namespace.NamespaceActor - demo-cowbnb-default-rtdb successfully activated FBKV (SurveyIdle(0)) wait: 138ms, init: 0ms
-18:28:31.174 [NamespaceSystem-blocking-namespace-operation-dispatcher-6] INFO com.firebase.core.namespace.StateManager - Namespace demo-cowbnb-default-rtdb status Active to Active
-18:35:15.915 [Thread-0] INFO com.firebase.server.forge.App$ - Attempting graceful shutdown.
-18:35:15.922 [NamespaceSystem-akka.actor.default-dispatcher-16] INFO com.firebase.core.namespace.Terminator$Terminator - 1 actors left to terminate: demo-cowbnb-default-rtdb
-18:35:15.928 [NamespaceSystem-akka.actor.default-dispatcher-29] INFO com.firebase.core.namespace.NamespaceActor - stopped namespace actor for demo-cowbnb-default-rtdb
-18:35:15.933 [Thread-0] INFO com.firebase.server.forge.App$ - Graceful shutdown complete.
+17:08:05.124 [NamespaceSystem-akka.actor.default-dispatcher-5] INFO akka.event.slf4j.Slf4jLogger - Slf4jLogger started
+17:08:05.297 [main] INFO com.firebase.server.forge.App$ - Listening at 127.0.0.1:9000
+17:08:17.758 [NamespaceSystem-akka.actor.default-dispatcher-5] INFO com.firebase.core.namespace.NamespaceActor - demo-cowbnb-default-rtdb successfully activated FBKV (SurveyIdle(0)) wait: 108ms, init: 0ms
+17:08:17.858 [NamespaceSystem-blocking-namespace-operation-dispatcher-7] INFO com.firebase.core.namespace.StateManager - Namespace demo-cowbnb-default-rtdb status Active to Active
+18:20:47.584 [Thread-0] INFO com.firebase.server.forge.App$ - Attempting graceful shutdown.
+18:20:47.592 [NamespaceSystem-akka.actor.default-dispatcher-21] INFO com.firebase.core.namespace.Terminator$Terminator - 1 actors left to terminate: demo-cowbnb-default-rtdb
+18:20:47.597 [NamespaceSystem-akka.actor.default-dispatcher-17] INFO com.firebase.core.namespace.NamespaceActor - stopped namespace actor for demo-cowbnb-default-rtdb
+18:20:47.602 [Thread-0] INFO com.firebase.server.forge.App$ - Graceful shutdown complete.
